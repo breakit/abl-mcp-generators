@@ -2,7 +2,7 @@
 
 ABL code scaffolding — business entities, services, controllers, workflows, ABLUnit tests, ABLDoc documentation, and project initialization.
 
-Part of the [abl-mcp-server](https://github.com/breakit/abl-mcp-server) ecosystem.
+Part of the [abl-mcp-server](https://github.com/breakit/abl-mcp-server) ecosystem. Built on [`@breakit/abl-mcp-core`](https://github.com/breakit/abl-mcp-core).
 
 ## Features
 
