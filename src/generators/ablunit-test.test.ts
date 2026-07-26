@@ -20,10 +20,16 @@ describe('generateTest', () => {
     expect(result).toContain('inherits openedge.ablunit.testcase')
   })
 
-  it('generates temp-table and dataset with convention', () => {
+  it('includes shared data contract', () => {
     const result = generateTest(spec)
-    expect(result).toContain('define temp-table l-customer-entity-tt')
-    expect(result).toContain('define dataset l-customer-entity-ds')
+    expect(result).toContain('{ customer-entity-contract.i }')
+  })
+
+  it('has setup method', () => {
+    const result = generateTest(spec)
+    expect(result).toContain('@setup.')
+    expect(result).toContain('method public void setup')
+    expect(result).toContain('l-service-o = new CustomerEntityservice()')
   })
 
   it('generates testCreate method', () => {
@@ -31,27 +37,31 @@ describe('generateTest', () => {
     expect(result).toContain('@test.')
     expect(result).toContain('method public void testcreate')
     expect(result).toContain('create l-customer-entity-tt')
-    expect(result).toContain('l-customer-entity-tt.CustNum')
-    expect(result).toContain('l-customer-entity-tt.Name')
+    expect(result).toContain('l-service-o:create')
   })
 
-  it('generates testSave method', () => {
+  it('generates testList method', () => {
     const result = generateTest(spec)
-    expect(result).toContain('method public void testsave')
-    expect(result).toContain('l-entity-o = CustomerEntity:create()')
-    expect(result).toContain('assert:istrue(l-entity-o:save())')
+    expect(result).toContain('method public void testlist')
+    expect(result).toContain('l-service-o:listall()')
   })
 
-  it('generates testRead method', () => {
+  it('generates testUpdate method', () => {
     const result = generateTest(spec)
-    expect(result).toContain('method public void testread')
-    expect(result).toContain('CustomerEntity:read("key")')
+    expect(result).toContain('method public void testupdate')
+    expect(result).toContain('l-service-o:update')
   })
 
   it('generates testDelete method', () => {
     const result = generateTest(spec)
     expect(result).toContain('method public void testdelete')
-    expect(result).toContain('valid-object(l-entity-o)')
+    expect(result).toContain('l-service-o:delete')
+  })
+
+  it('has teardown method', () => {
+    const result = generateTest(spec)
+    expect(result).toContain('@teardown.')
+    expect(result).toContain('method public void teardown')
   })
 })
 

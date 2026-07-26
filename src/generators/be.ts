@@ -7,7 +7,14 @@ export function generateBusinessEntity(spec: BusinessEntitySpec): string {
   return loadAndRender('business-entity.cls', {
     ...spec,
     kebabName: toKebab(spec.name),
-    lowerName: spec.name.toLowerCase(),
+  } as unknown as Record<string, unknown>)
+}
+
+export function generateEntityContract(spec: { entityName: string; tableName: string }): string {
+  return loadAndRender('entity-contract.i', {
+    entityName: spec.entityName,
+    tableName: spec.tableName,
+    kebabName: toKebab(spec.entityName),
   } as unknown as Record<string, unknown>)
 }
 
@@ -15,7 +22,6 @@ export function generateService(spec: ServiceSpec): string {
   return loadAndRender('service.cls', {
     ...spec,
     kebabName: toKebab(spec.entityName),
-    lowerName: spec.entityName.toLowerCase(),
   } as unknown as Record<string, unknown>)
 }
 
@@ -23,12 +29,14 @@ export function generateController(spec: ControllerSpec): string {
   return loadAndRender('controller.cls', {
     ...spec,
     kebabName: toKebab(spec.entityName),
-    lowerName: spec.entityName.toLowerCase(),
   } as unknown as Record<string, unknown>)
 }
 
 export function scaffoldFullEntity(spec: FullEntityScaffold): ScaffoldResult[] {
   const results: ScaffoldResult[] = []
+
+  const contract = generateEntityContract({ entityName: spec.entityName, tableName: spec.tableName })
+  results.push({ file: `${spec.outputDir}/contracts/${toKebab(spec.entityName)}-contract.i`, content: contract })
 
   const be = generateBusinessEntity({
     package: spec.package,

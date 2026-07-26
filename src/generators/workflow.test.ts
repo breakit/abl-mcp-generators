@@ -33,10 +33,31 @@ describe('generateWorkflow', () => {
     expect(result).toContain('stepApprove')
   })
 
-  it('generates step methods', () => {
+  it('sets initial step to first step name', () => {
     const result = generateWorkflow(baseSpec)
-    expect(result).toContain('method public character stepValidate')
-    expect(result).toContain('method public character stepApprove')
+    expect(result).toContain('l-context-tt.currentstep = "Validate"')
+  })
+
+  it('has otherwise clause in step routing', () => {
+    const result = generateWorkflow(baseSpec)
+    expect(result).toContain('otherwise do')
+    expect(result).toContain('l-context-tt.status = "error"')
+  })
+
+  it('generates step methods as protected (not public)', () => {
+    const result = generateWorkflow(baseSpec)
+    expect(result).toContain('method protected character stepValidate')
+    expect(result).toContain('method protected character stepApprove')
+  })
+
+  it('step methods do not have REST export annotation', () => {
+    const result = generateWorkflow(baseSpec)
+    // Only the Execute method should have @openapi.openedge.export, not step methods
+    const executeIdx = result.indexOf('method public character execute')
+    const stepIdx1 = result.indexOf('method protected character stepValidate')
+    // Step methods should not have @openapi above them
+    const beforeStep = result.slice(Math.max(0, stepIdx1 - 80), stepIdx1)
+    expect(beforeStep).not.toContain('@openapi.openedge.export')
   })
 
   it('includes step transitions', () => {
