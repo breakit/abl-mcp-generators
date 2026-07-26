@@ -40,6 +40,13 @@ export interface ScaffoldResult {
 export interface WorkflowStep {
   name: string
   nextStep?: string
+  nextStatus?: string
+}
+
+export interface ContextField {
+  name: string
+  dataType: string
+  initial?: string
 }
 
 export interface WorkflowSpec {
@@ -47,12 +54,17 @@ export interface WorkflowSpec {
   description?: string
   initialStatus: string
   steps: WorkflowStep[]
+  contextFields?: ContextField[]
+  payloadTable?: string
 }
 
 export interface WorkflowTaskSpec {
   name: string
   workflowName: string
   description?: string
+  nextStep?: string
+  nextStatus?: string
+  payloadTable?: string
 }
 
 export interface CcsComponentSpec {
