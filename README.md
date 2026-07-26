@@ -93,6 +93,10 @@ src/templates/
 | Workflow | Standalone (`.cls` with step methods) |
 | Business Task | Standalone (`.cls` with input/output datasets) |
 
+## Acknowledgments
+
+- Built on [@breakit/abl-mcp-core](https://github.com/breakit/abl-mcp-core) which uses [tree-sitter-abl](https://github.com/usagi-coffee/tree-sitter-abl) and [Prolint](https://github.com/jcaillon/prolint)-inspired rules
+
 ## License
 
 MIT
