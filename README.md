@@ -14,7 +14,7 @@ Part of the [abl-mcp-server](https://github.com/breakit/abl-mcp-server) ecosyste
 - **Business Task** — Generate standalone task `.cls` with ProDataSet input/output, `Execute` method, and REST annotations
 - **CCS Layer** — Generate the full stack (BE + Service + Controller) with ProDataSets
 - **ABLUnit Tests** — Generate test classes extending `OpenEdge.ABLUnit.TestCase` with ProDataSet-driven CRUD tests
-- **ABLDoc** — Generate HTML documentation from ABLDoc `/** */` comments
+- **ABLDoc** — Generate formatted `/** */` comment blocks for classes, methods, functions, and procedures; generate HTML documentation from existing ABLDoc comments
 - **Project Scaffold** — Initialize a new ABL project with directory structure, `abl.toml`, config includes
 
 ## Usage
@@ -55,13 +55,17 @@ const wf = generateWorkflow({
   ],
 })
 
-// Generate a standalone business task
-const task = generateBusinessTask({
-  package: 'com.company.app',
-  name: 'ValidateOrder',
-  inputFields: [{ name: 'OrderId', dataType: 'INTEGER' }],
-  outputFields: [{ name: 'IsValid', dataType: 'LOGICAL' }],
+// Generate an ABLDoc comment block
+const comment = generateDocComment({
+  type: 'method',
+  name: 'GetData',
+  description: 'Retrieve data from the database',
+  params: [{ name: 'request', dataType: 'IGetDataRequest', description: 'Request object' }],
+  returnType: 'HANDLE',
 })
+
+// Generate HTML documentation from existing ABLDoc comments
+const doc = generateAbldocHtml('./project-root', 'My ABL Project')
 ```
 
 ## Templates
