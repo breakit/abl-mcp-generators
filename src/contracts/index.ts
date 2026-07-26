@@ -41,6 +41,7 @@ export interface WorkflowStep {
   name: string
   nextStep?: string
   nextStatus?: string
+  description?: string
 }
 
 export interface ContextField {
@@ -50,6 +51,7 @@ export interface ContextField {
 }
 
 export interface WorkflowSpec {
+  package: string
   name: string
   description?: string
   initialStatus: string
@@ -58,13 +60,12 @@ export interface WorkflowSpec {
   payloadTable?: string
 }
 
-export interface WorkflowTaskSpec {
+export interface BusinessTaskSpec {
+  package: string
   name: string
-  workflowName: string
   description?: string
-  nextStep?: string
-  nextStatus?: string
-  payloadTable?: string
+  inputFields: FieldSpec[]
+  outputFields: FieldSpec[]
 }
 
 export interface CcsComponentSpec {

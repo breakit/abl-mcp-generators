@@ -1,5 +1,6 @@
 export * from './generators/be.js'
 export * from './generators/workflow.js'
+export * from './generators/task.js'
 export * from './generators/ccs.js'
 export * from './generators/project.js'
 export * from './generators/test.js'

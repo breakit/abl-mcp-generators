@@ -8,11 +8,14 @@ const TEMPLATES_DIR = join(__dirname, 'templates')
 /**
  * Simple template renderer.
  * Replaces {{KEY}} with values from the context object.
- * Supports {{#if KEY}}...{{/if}} conditionals.
+ * Supports {{#if KEY}}...{{/if}} conditionals and {{#each KEY}}...{{/each}} iteration.
  */
 export function renderTemplate(template: string, context: Record<string, unknown>): string {
+  // Each loops — expand first so inner conditionals evaluate against item context
+  let result = renderEach(template, context)
+
   // Conditionals
-  let result = template.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, body) => {
+  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, body) => {
     return context[key] ? body : ''
   })
 
@@ -21,6 +24,31 @@ export function renderTemplate(template: string, context: Record<string, unknown
     const val = context[key]
     return val != null ? String(val) : `{{${key}}}`
   })
+
+  return result
+}
+
+function renderEach(template: string, ctx: Record<string, unknown>): string {
+  // Find innermost {{#each KEY}}...{{/each}} and expand
+  const re = /\{\{#each (\w+)\}\}([\s\S]*?)\{\{\/each\}\}/
+  let result = template
+  let match: RegExpExecArray | null
+
+  while ((match = re.exec(result)) !== null) {
+    const [full, key, body] = match
+    const arr = ctx[key]
+    if (!Array.isArray(arr) || arr.length === 0) {
+      result = result.replace(full, '')
+      continue
+    }
+    const out = arr.map(item => {
+      if (typeof item === 'object' && item != null) {
+        return renderTemplate(body, { ...ctx, ...item as Record<string, unknown> })
+      }
+      return renderTemplate(body, { ...ctx, value: item })
+    }).join('')
+    result = result.replace(full, out)
+  }
 
   return result
 }
