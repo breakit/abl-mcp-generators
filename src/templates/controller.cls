@@ -1,24 +1,37 @@
-CLASS {{package}}.{{name}}Controller:
+@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
+CLASS {{package}}.{{name}}Controller
+  INHERITS OpenEdge.Web.WebHandler:
 
-  /* Controller for {{entityName}} — handles UI/API interaction */
+  /* Controller for {{entityName}} */
 
-  METHOD PUBLIC static CHARACTER HandleGet(pId AS CHARACTER):
-    DEFINE VARIABLE o{{entityName}} AS {{entityName}} NO-UNDO.
-    o{{entityName}} = {{name}}Service:GetById(pId).
-    IF VALID-OBJECT(o{{entityName}}) THEN RETURN o{{entityName}}:ToString().
-    RETURN ?.
+  @openapi.openedge.export(TYPE="REST").
+  METHOD OVERRIDE PROTECTED VOID HandleRequest(INPUT pcRequest AS CHARACTER):
+    DEFINE VARIABLE oEntity AS {{entityName}} NO-UNDO.
+    DEFINE VARIABLE oService AS {{entityName}}Service NO-UNDO.
+
+    oService = NEW {{entityName}}Service().
+
+    /* TODO: route pcRequest to appropriate method */
+    SUPER:HandleRequest(pcRequest).
   END METHOD.
 
-  METHOD PUBLIC static CHARACTER HandleCreate(INPUT pJson AS CHARACTER):
-    DEFINE VARIABLE o{{entityName}} AS {{entityName}} NO-UNDO.
-    o{{entityName}} = {{name}}Service:Create().
+  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
+  METHOD PUBLIC CHARACTER HandleGet(pId AS CHARACTER):
+    RETURN {{entityName}}Service:GetById(pId):ToString().
+  END METHOD.
+
+  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
+  METHOD PUBLIC CHARACTER HandleCreate(INPUT pJson AS CHARACTER):
+    DEFINE VARIABLE oEntity AS {{entityName}} NO-UNDO.
+    oEntity = {{entityName}}Service:Create().
     /* TODO: populate from pJson */
-    IF o{{entityName}}:Save() THEN RETURN "OK".
+    IF oEntity:Save() THEN RETURN "OK".
     RETURN "ERROR".
   END METHOD.
 
-  METHOD PUBLIC static CHARACTER HandleDelete(pId AS CHARACTER):
-    IF {{name}}Service:Delete(pId) THEN RETURN "OK".
+  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
+  METHOD PUBLIC CHARACTER HandleDelete(pId AS CHARACTER):
+    IF {{entityName}}Service:Delete(pId) THEN RETURN "OK".
     RETURN "ERROR".
   END METHOD.
 

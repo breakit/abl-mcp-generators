@@ -1,38 +1,59 @@
-CLASS {{package}}.{{name}}:
-  {{#if description}}
-  /* {{description}} */
-  {{/if}}
+@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
+CLASS {{package}}.{{name}} INHERITS OpenEdge.BusinessLogic.BusinessEntity:
+  {{#if description}}/* {{description}} */{{/if}}
 
-  DEFINE PUBLIC PROPERTY TableName AS CHARACTER INITIAL "{{tableName}}" GET. SET.
+  DEFINE TEMP-TABLE tt{{name}} LIKE {{tableName}}.
+  DEFINE DATASET ds{{name}} FOR tt{{name}}.
 
-  {{#each fields}}
-  DEFINE PUBLIC PROPERTY {{name}} AS {{dataType}}{{#if initial}} INITIAL {{initial}}{{/if}} GET. SET.
-  {{/each}}
+  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
+  METHOD OVERRIDE PUBLIC HANDLE GetData(
+    INPUT request AS OpenEdge.BusinessLogic.IGetDataRequest):
 
-  CONSTRUCTOR PUBLIC {{name}}():
-    SUPER().
-  END CONSTRUCTOR.
+    DEFINE VARIABLE hBuffer AS HANDLE NO-UNDO.
+    DEFINE VARIABLE hQuery  AS HANDLE NO-UNDO.
 
-  METHOD PUBLIC static {{name}} Create():
-    DEFINE VARIABLE o AS {{name}} NO-UNDO.
-    o = NEW {{name}}().
-    RETURN o.
+    EMPTY TEMP-TABLE tt{{name}}.
+
+    hBuffer = DATASET ds{{name}}:GET-BUFFER-HANDLE(1).
+    hQuery = hBuffer:QUERY-PREPARE("FOR EACH {{tableName}}").
+    hQuery:QUERY-OPEN().
+
+    REPEAT:
+      hBuffer:BUFFER-COPY(hQuery).
+      IF hQuery:QUERY-OFF-END THEN LEAVE.
+      hQuery:GET-NEXT().
+    END.
+
+    hQuery:QUERY-CLOSE().
+    RETURN DATASET ds{{name}}:HANDLE.
   END METHOD.
 
-  METHOD PUBLIC static {{name}} Read(pKey AS CHARACTER):
-    DEFINE VARIABLE o AS {{name}} NO-UNDO.
-    o = NEW {{name}}().
-    /* TODO: load from database */
-    RETURN o.
-  END METHOD.
+  @openapi.openedge.export(TYPE="REST").
+  METHOD OVERRIDE PUBLIC LOGICAL UpdateData(
+    INPUT DATASET FOR ds{{name}}):
 
-  METHOD PUBLIC LOGICAL Save():
-    /* TODO: save to database */
-    RETURN TRUE.
-  END METHOD.
+    {{#each fields}}
+    DEFINE BUFFER b{{name}} FOR {{../tableName}}.
+    {{/each}}
 
-  METHOD PUBLIC LOGICAL Delete():
-    /* TODO: delete from database */
+    FOR EACH tt{{name}}:
+      IF ROW-STATE(tt{{name}}) = ROW-CREATED THEN DO:
+        {{#each fields}}IF tt{{../name}}.{{name}} <> ? THEN b{{name}}.{{name}} = tt{{../name}}.{{name}}.
+        {{/each}}
+        RELEASE b{{name}}.
+      END.
+      ELSE IF ROW-STATE(tt{{name}}) = ROW-MODIFIED THEN DO:
+        FIND b{{name}}.
+        {{#each fields}}IF tt{{../name}}.{{name}} <> ? THEN b{{name}}.{{name}} = tt{{../name}}.{{name}}.
+        {{/each}}
+        RELEASE b{{name}}.
+      END.
+      ELSE IF ROW-STATE(tt{{name}}) = ROW-DELETED THEN DO:
+        FIND b{{name}}.
+        DELETE b{{name}}.
+      END.
+    END.
+
     RETURN TRUE.
   END METHOD.
 

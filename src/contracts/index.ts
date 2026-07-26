@@ -78,3 +78,18 @@ export interface ProjectFile {
   path: string
   content: string
 }
+
+export interface TestSpec {
+  package: string
+  name: string
+  entityName: string
+  tableName: string
+  description?: string
+  fields: FieldSpec[]
+  outputDir: string
+}
+
+export interface TestMethodSpec {
+  name: string
+  description?: string
+}
