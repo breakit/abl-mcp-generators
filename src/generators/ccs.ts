@@ -1,17 +1,8 @@
 import { generateBusinessEntity, generateService, generateController } from './be.js'
 import type { FieldSpec } from './be.js'
+import type { CcsComponentSpec, CcsScaffoldResult } from '../contracts/index.js'
 
-export interface CcsComponentSpec {
-  package: string
-  name: string
-  entityName: string
-  fields: FieldSpec[]
-}
-
-export interface CcsScaffoldResult {
-  component: string
-  files: { file: string; content: string }[]
-}
+export type { CcsComponentSpec, CcsScaffoldResult }
 
 /**
  * Generate a full CCS layer stack for a component:

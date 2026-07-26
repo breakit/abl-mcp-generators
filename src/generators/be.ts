@@ -1,54 +1,18 @@
 import { loadAndRender } from '../template.js'
+import type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult } from '../contracts/index.js'
 
-export interface FieldSpec {
-  name: string
-  dataType: string
-  initial?: string
-}
-
-export interface BusinessEntitySpec {
-  package: string
-  name: string
-  tableName: string
-  description?: string
-  fields: FieldSpec[]
-}
+export type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult }
 
 export function generateBusinessEntity(spec: BusinessEntitySpec): string {
   return loadAndRender('business-entity.cls', spec as unknown as Record<string, unknown>)
-}
-
-export interface ServiceSpec {
-  package: string
-  name: string
-  entityName: string
 }
 
 export function generateService(spec: ServiceSpec): string {
   return loadAndRender('service.cls', spec as unknown as Record<string, unknown>)
 }
 
-export interface ControllerSpec {
-  package: string
-  name: string
-  entityName: string
-}
-
 export function generateController(spec: ControllerSpec): string {
   return loadAndRender('controller.cls', spec as unknown as Record<string, unknown>)
-}
-
-export interface FullEntityScaffold {
-  entityName: string
-  package: string
-  tableName: string
-  fields: FieldSpec[]
-  outputDir: string
-}
-
-export interface ScaffoldResult {
-  file: string
-  content: string
 }
 
 export function scaffoldFullEntity(spec: FullEntityScaffold): ScaffoldResult[] {

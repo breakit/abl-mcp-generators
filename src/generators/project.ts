@@ -1,14 +1,6 @@
-export interface ProjectScaffoldSpec {
-  name: string
-  package: string
-  description?: string
-  outputDir: string
-}
+import type { ProjectScaffoldSpec, ProjectFile } from '../contracts/index.js'
 
-export interface ProjectFile {
-  path: string
-  content: string
-}
+export type { ProjectScaffoldSpec, ProjectFile }
 
 export function scaffoldProject(spec: ProjectScaffoldSpec): ProjectFile[] {
   const pkg = spec.package.replace(/\./g, '/')
