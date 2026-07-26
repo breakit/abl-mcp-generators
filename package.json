@@ -1,0 +1,34 @@
+{
+  "name": "@breakit/abl-mcp-generators",
+  "version": "0.1.0",
+  "description": "ABL code scaffolding — business entities, workflows, CCS layer",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "src/templates"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@breakit/abl-mcp-core": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/breakit/abl-mcp-generators.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
