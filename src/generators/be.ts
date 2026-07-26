@@ -1,18 +1,30 @@
-import { loadAndRender } from '../template.js'
+import { loadAndRender, toKebab } from '../template.js'
 import type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult } from '../contracts/index.js'
 
 export type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult }
 
 export function generateBusinessEntity(spec: BusinessEntitySpec): string {
-  return loadAndRender('business-entity.cls', spec as unknown as Record<string, unknown>)
+  return loadAndRender('business-entity.cls', {
+    ...spec,
+    kebabName: toKebab(spec.name),
+    lowerName: spec.name.toLowerCase(),
+  } as unknown as Record<string, unknown>)
 }
 
 export function generateService(spec: ServiceSpec): string {
-  return loadAndRender('service.cls', spec as unknown as Record<string, unknown>)
+  return loadAndRender('service.cls', {
+    ...spec,
+    kebabName: toKebab(spec.entityName),
+    lowerName: spec.entityName.toLowerCase(),
+  } as unknown as Record<string, unknown>)
 }
 
 export function generateController(spec: ControllerSpec): string {
-  return loadAndRender('controller.cls', spec as unknown as Record<string, unknown>)
+  return loadAndRender('controller.cls', {
+    ...spec,
+    kebabName: toKebab(spec.entityName),
+    lowerName: spec.entityName.toLowerCase(),
+  } as unknown as Record<string, unknown>)
 }
 
 export function scaffoldFullEntity(spec: FullEntityScaffold): ScaffoldResult[] {

@@ -1,60 +1,61 @@
-@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
-CLASS {{package}}.{{name}} INHERITS OpenEdge.BusinessLogic.BusinessEntity:
+@openapi.openedge.export file (type="rest", executionmode="singleton").
+class {{package}}.{{name}} inherits openedge.businesslogic.businessentity:
   {{#if description}}/* {{description}} */{{/if}}
 
-  DEFINE TEMP-TABLE tt{{name}} LIKE {{tableName}}.
-  DEFINE DATASET ds{{name}} FOR tt{{name}}.
+  define temp-table l-{{kebabName}}-tt like {{tableName}}.
+  define dataset l-{{kebabName}}-ds for l-{{kebabName}}-tt.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD OVERRIDE PUBLIC HANDLE GetData(
-    INPUT request AS OpenEdge.BusinessLogic.IGetDataRequest):
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method override public handle getdata(
+    input request as openedge.businesslogic.igetdatarequest):
 
-    DEFINE VARIABLE hBuffer AS HANDLE NO-UNDO.
-    DEFINE VARIABLE hQuery  AS HANDLE NO-UNDO.
+    define variable l-buffer-h as handle no-undo.
+    define variable l-query-h  as handle no-undo.
 
-    EMPTY TEMP-TABLE tt{{name}}.
+    empty temp-table l-{{kebabName}}-tt.
 
-    hBuffer = DATASET ds{{name}}:GET-BUFFER-HANDLE(1).
-    hQuery = hBuffer:QUERY-PREPARE("FOR EACH {{tableName}}").
-    hQuery:QUERY-OPEN().
+    l-buffer-h = dataset l-{{kebabName}}-ds:get-buffer-handle(1).
+    l-query-h = l-buffer-h:query-prepare("for each {{tableName}}").
+    l-query-h:query-open().
 
-    REPEAT:
-      hBuffer:BUFFER-COPY(hQuery).
-      IF hQuery:QUERY-OFF-END THEN LEAVE.
-      hQuery:GET-NEXT().
-    END.
+    repeat:
+      l-buffer-h:buffer-copy(l-query-h).
+      if l-query-h:query-off-end then leave.
+      l-query-h:get-next().
+    end.
 
-    hQuery:QUERY-CLOSE().
-    RETURN DATASET ds{{name}}:HANDLE.
-  END METHOD.
+    l-query-h:query-close().
+    return dataset l-{{kebabName}}-ds:handle.
+  end method.
 
-  @openapi.openedge.export(TYPE="REST").
-  METHOD OVERRIDE PUBLIC LOGICAL UpdateData(
-    INPUT DATASET FOR ds{{name}}):
+  @openapi.openedge.export(type="rest").
+  method override public logical updatedata(
+    input dataset for l-{{kebabName}}-ds):
 
-    {{#each fields}}
-    DEFINE BUFFER b{{name}} FOR {{../tableName}}.
-    {{/each}}
+    define buffer l-{{kebabName}}-buf for {{tableName}}.
 
-    FOR EACH tt{{name}}:
-      IF ROW-STATE(tt{{name}}) = ROW-CREATED THEN DO:
-        {{#each fields}}IF tt{{../name}}.{{name}} <> ? THEN b{{name}}.{{name}} = tt{{../name}}.{{name}}.
+    for each l-{{kebabName}}-tt:
+      if row-state(l-{{kebabName}}-tt) = row-created then do:
+        {{#each fields}}if l-{{kebabName}}-tt.{{name}} <> ? then l-{{kebabName}}-buf.{{name}} = l-{{kebabName}}-tt.{{name}}.
         {{/each}}
-        RELEASE b{{name}}.
-      END.
-      ELSE IF ROW-STATE(tt{{name}}) = ROW-MODIFIED THEN DO:
-        FIND b{{name}}.
-        {{#each fields}}IF tt{{../name}}.{{name}} <> ? THEN b{{name}}.{{name}} = tt{{../name}}.{{name}}.
+        release l-{{kebabName}}-buf.
+      end.
+      else if row-state(l-{{kebabName}}-tt) = row-modified then do:
+        find l-{{kebabName}}-buf.
+        {{#each fields}}if l-{{kebabName}}-tt.{{name}} <> ? then l-{{kebabName}}-buf.{{name}} = l-{{kebabName}}-tt.{{name}}.
         {{/each}}
-        RELEASE b{{name}}.
-      END.
-      ELSE IF ROW-STATE(tt{{name}}) = ROW-DELETED THEN DO:
-        FIND b{{name}}.
-        DELETE b{{name}}.
-      END.
-    END.
+        release l-{{kebabName}}-buf.
+      end.
+      else if row-state(l-{{kebabName}}-tt) = row-deleted then do:
+        find l-{{kebabName}}-buf.
+        delete l-{{kebabName}}-buf.
+      end.
+    end.
 
-    RETURN TRUE.
-  END METHOD.
+    return true.
+  end method.
 
-END CLASS.
+    return true.
+  end method.
+
+end class.

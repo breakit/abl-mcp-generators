@@ -1,68 +1,68 @@
-@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
+@openapi.openedge.export file (type="rest", executionmode="singleton").
 {{#if description}}/* {{description}} */{{/if}}
-CLASS {{package}}.workflows.{{name}}:
+class {{package}}.workflows.{{name}}:
 
-  DEFINE TEMP-TABLE ttWorkflowContext NO-UNDO
-    FIELD WorkflowId    AS CHARACTER
-    FIELD CurrentStep   AS CHARACTER
-    FIELD Status        AS CHARACTER
-    FIELD StartedDate   AS DATETIME
-    FIELD CompletedDate AS DATETIME
-    FIELD AssignedTo    AS CHARACTER
+  define temp-table l-context-tt no-undo
+    field workflowid    as character
+    field currentstep   as character
+    field status        as character
+    field starteddate   as datetime
+    field completeddate as datetime
+    field assignedto    as character
     {{#each contextFields}}
-    FIELD {{name}} AS {{dataType}}{{#if initial}} INITIAL {{initial}}{{/if}}
+    field {{name}} as {{dataType}}{{#if initial}} initial {{initial}}{{/if}}
     {{/each}}.
-  DEFINE DATASET dsWorkflow FOR ttWorkflowContext.
+  define dataset l-context-ds for l-context-tt.
 
   {{#if payloadTable}}
-  DEFINE TEMP-TABLE ttPayload LIKE {{payloadTable}}.
-  DEFINE DATASET dsPayload FOR ttPayload.
+  define temp-table l-payload-tt like {{payloadTable}}.
+  define dataset l-payload-ds for l-payload-tt.
   {{/if}}
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC CHARACTER Execute(
-    INPUT-OUTPUT DATASET FOR dsWorkflow{{#if payloadTable}},
-    INPUT-OUTPUT DATASET FOR dsPayload{{/if}}):
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public character execute(
+    input-output dataset for l-context-ds{{#if payloadTable}},
+    input-output dataset for l-payload-ds{{/if}}):
 
-    FIND FIRST ttWorkflowContext.
-    IF NOT AVAILABLE ttWorkflowContext THEN DO:
-      CREATE ttWorkflowContext.
-      ASSIGN
-        ttWorkflowContext.WorkflowId  = STRING(NOW)
-        ttWorkflowContext.Status      = "{{initialStatus}}"
-        ttWorkflowContext.CurrentStep = "start"
-        ttWorkflowContext.StartedDate = NOW.
-    END.
+    find first l-context-tt.
+    if not available l-context-tt then do:
+      create l-context-tt.
+      assign
+        l-context-tt.workflowid  = string(now)
+        l-context-tt.status      = "{{initialStatus}}"
+        l-context-tt.currentstep = "start"
+        l-context-tt.starteddate = now.
+    end.
 
-    CASE ttWorkflowContext.CurrentStep:
+    case l-context-tt.currentstep:
       {{#each steps}}
-      WHEN "{{name}}" THEN DO:
-        Step{{name}}(INPUT-OUTPUT DATASET dsWorkflow{{#if payloadTable}}, INPUT-OUTPUT DATASET dsPayload{{/if}}).
-      END.
+      when "{{name}}" then do:
+        step{{name}}(input-output dataset l-context-ds{{#if payloadTable}}, input-output dataset l-payload-ds{{/if}}).
+      end.
       {{/each}}
-    END CASE.
+    end case.
 
-    RETURN ttWorkflowContext.Status.
-  END METHOD.
+    return l-context-tt.status.
+  end method.
 
   {{#each steps}}
-  @openapi.openedge.export(TYPE="REST").
-  METHOD PUBLIC CHARACTER Step{{name}}(
-    INPUT-OUTPUT DATASET FOR dsWorkflow{{#if payloadTable}},
-    INPUT-OUTPUT DATASET FOR dsPayload{{/if}}):
+  @openapi.openedge.export(type="rest").
+  method public character step{{name}}(
+    input-output dataset for l-context-ds{{#if payloadTable}},
+    input-output dataset for l-payload-ds{{/if}}):
 
-    FIND FIRST ttWorkflowContext.
+    find first l-context-tt.
     {{#if nextStatus}}
-    ASSIGN ttWorkflowContext.Status = "{{nextStatus}}".
+    assign l-context-tt.status = "{{nextStatus}}".
     {{/if}}
     {{#if nextStep}}
-    ASSIGN ttWorkflowContext.CurrentStep = "{{nextStep}}".
+    assign l-context-tt.currentstep = "{{nextStep}}".
     {{/if}}
 
-    /* TODO: implement step logic for "{{name}}" */
+    /* todo: implement step logic for "{{name}}" */
 
-    RETURN "SUCCESS".
-  END METHOD.
+    return "success".
+  end method.
   {{/each}}
 
-END CLASS.
+end class.

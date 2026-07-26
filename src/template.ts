@@ -62,3 +62,10 @@ export function loadAndRender(name: string, context: Record<string, unknown>): s
   const template = loadTemplate(name)
   return renderTemplate(template, context)
 }
+
+export function toKebab(name: string): string {
+  return name
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .toLowerCase()
+}

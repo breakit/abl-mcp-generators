@@ -1,43 +1,43 @@
-@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
+@openapi.openedge.export file (type="rest", executionmode="singleton").
 {{#if description}}/* {{description}} */{{/if}}
-CLASS {{package}}.tasks.{{name}}:
+class {{package}}.tasks.{{name}}:
 
-  DEFINE TEMP-TABLE tt{{name}}Input NO-UNDO
+  define temp-table l-input-tt no-undo
     {{#each inputFields}}
-    FIELD {{name}} AS {{dataType}}
+    field {{name}} as {{dataType}}
     {{/each}}.
-  DEFINE DATASET ds{{name}}Input FOR tt{{name}}Input.
+  define dataset l-input-ds for l-input-tt.
 
-  DEFINE TEMP-TABLE tt{{name}}Output NO-UNDO
-    FIELD StatusCode    AS CHARACTER
-    FIELD StatusMessage AS CHARACTER
+  define temp-table l-output-tt no-undo
+    field statuscode    as character
+    field statusmessage as character
     {{#each outputFields}}
-    FIELD {{name}} AS {{dataType}}
+    field {{name}} as {{dataType}}
     {{/each}}.
-  DEFINE DATASET ds{{name}}Output FOR tt{{name}}Output.
+  define dataset l-output-ds for l-output-tt.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC CHARACTER Execute(
-    INPUT  DATASET FOR ds{{name}}Input,
-    OUTPUT DATASET FOR ds{{name}}Output):
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public character execute(
+    input  dataset for l-input-ds,
+    output dataset for l-output-ds):
 
-    FIND FIRST tt{{name}}Input.
-    IF AVAILABLE tt{{name}}Input THEN DO:
-      CREATE tt{{name}}Output.
-      ASSIGN
-        tt{{name}}Output.StatusCode    = "SUCCESS"
-        tt{{name}}Output.StatusMessage = "Completed".
-    END.
-    ELSE DO:
-      CREATE tt{{name}}Output.
-      ASSIGN
-        tt{{name}}Output.StatusCode    = "ERROR"
-        tt{{name}}Output.StatusMessage = "No input data provided".
-    END.
+    find first l-input-tt.
+    if available l-input-tt then do:
+      create l-output-tt.
+      assign
+        l-output-tt.statuscode    = "success"
+        l-output-tt.statusmessage = "completed".
+    end.
+    else do:
+      create l-output-tt.
+      assign
+        l-output-tt.statuscode    = "error"
+        l-output-tt.statusmessage = "no input data provided".
+    end.
 
-    /* TODO: implement task business logic */
+    /* todo: implement task business logic */
 
-    RETURN tt{{name}}Output.StatusCode.
-  END METHOD.
+    return l-output-tt.statuscode.
+  end method.
 
-END CLASS.
+end class.

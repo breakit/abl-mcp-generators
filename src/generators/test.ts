@@ -1,10 +1,13 @@
-import { loadAndRender } from '../template.js'
+import { loadAndRender, toKebab } from '../template.js'
 import type { TestSpec, ScaffoldResult } from '../contracts/index.js'
 
 export type { TestSpec }
 
 export function generateTest(spec: TestSpec): string {
-  return loadAndRender('test.cls', spec as unknown as Record<string, unknown>)
+  return loadAndRender('test.cls', {
+    ...spec,
+    kebabName: toKebab(spec.entityName),
+  } as unknown as Record<string, unknown>)
 }
 
 export function scaffoldTest(spec: TestSpec): ScaffoldResult {

@@ -1,29 +1,29 @@
-@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
-CLASS {{package}}.{{name}}Service:
+@openapi.openedge.export file (type="rest", executionmode="singleton").
+class {{package}}.{{name}}service:
 
-  /* Business logic service for {{entityName}} */
+  /* business logic service for {{entityName}} */
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC static {{entityName}} GetById(pId AS CHARACTER):
-    RETURN {{entityName}}:Read(pId).
-  END METHOD.
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public static {{entityName}} getbyid(i-id-c as character):
+    return {{entityName}}:read(i-id-c).
+  end method.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC static {{entityName}} Create():
-    RETURN {{entityName}}:Create().
-  END METHOD.
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public static {{entityName}} create():
+    return {{entityName}}:create().
+  end method.
 
-  @openapi.openedge.export(TYPE="REST").
-  METHOD PUBLIC static LOGICAL Save(o{{entityName}} AS {{entityName}}):
-    RETURN o{{entityName}}:Save().
-  END METHOD.
+  @openapi.openedge.export(type="rest").
+  method public static logical save(o-{{kebabName}}-o as {{entityName}}):
+    return o-{{kebabName}}-o:save().
+  end method.
 
-  @openapi.openedge.export(TYPE="REST").
-  METHOD PUBLIC static LOGICAL Delete(pId AS CHARACTER):
-    DEFINE VARIABLE o AS {{entityName}} NO-UNDO.
-    o = {{entityName}}:Read(pId).
-    IF VALID-OBJECT(o) THEN RETURN o:Delete().
-    RETURN FALSE.
-  END METHOD.
+  @openapi.openedge.export(type="rest").
+  method public static logical delete(i-id-c as character):
+    define variable l-entity-o as {{entityName}} no-undo.
+    l-entity-o = {{entityName}}:read(i-id-c).
+    if valid-object(l-entity-o) then return l-entity-o:delete().
+    return false.
+  end method.
 
-END CLASS.
+end class.

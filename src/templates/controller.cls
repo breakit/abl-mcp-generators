@@ -1,38 +1,38 @@
-@openapi.openedge.export FILE (TYPE="REST", executionMode="SINGLETON").
-CLASS {{package}}.{{name}}Controller
-  INHERITS OpenEdge.Web.WebHandler:
+@openapi.openedge.export file (type="rest", executionmode="singleton").
+class {{package}}.{{name}}controller
+  inherits openedge.web.webhandler:
 
-  /* Controller for {{entityName}} */
+  /* controller for {{entityName}} */
 
-  @openapi.openedge.export(TYPE="REST").
-  METHOD OVERRIDE PROTECTED VOID HandleRequest(INPUT pcRequest AS CHARACTER):
-    DEFINE VARIABLE oEntity AS {{entityName}} NO-UNDO.
-    DEFINE VARIABLE oService AS {{entityName}}Service NO-UNDO.
+  @openapi.openedge.export(type="rest").
+  method override protected void handlerequest(input i-request-c as character):
+    define variable l-entity-o  as {{entityName}} no-undo.
+    define variable l-service-o as {{entityName}}service no-undo.
 
-    oService = NEW {{entityName}}Service().
+    l-service-o = new {{entityName}}service().
 
-    /* TODO: route pcRequest to appropriate method */
-    SUPER:HandleRequest(pcRequest).
-  END METHOD.
+    /* todo: route i-request-c to appropriate method */
+    super:handlerequest(i-request-c).
+  end method.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC CHARACTER HandleGet(pId AS CHARACTER):
-    RETURN {{entityName}}Service:GetById(pId):ToString().
-  END METHOD.
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public character handleget(i-id-c as character):
+    return {{entityName}}service:getbyid(i-id-c):tostring().
+  end method.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC CHARACTER HandleCreate(INPUT pJson AS CHARACTER):
-    DEFINE VARIABLE oEntity AS {{entityName}} NO-UNDO.
-    oEntity = {{entityName}}Service:Create().
-    /* TODO: populate from pJson */
-    IF oEntity:Save() THEN RETURN "OK".
-    RETURN "ERROR".
-  END METHOD.
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public character handlecreate(input i-json-c as character):
+    define variable l-entity-o as {{entityName}} no-undo.
+    l-entity-o = {{entityName}}service:create().
+    /* todo: populate from i-json-c */
+    if l-entity-o:save() then return "ok".
+    return "error".
+  end method.
 
-  @openapi.openedge.export(TYPE="REST", useReturnValue="TRUE").
-  METHOD PUBLIC CHARACTER HandleDelete(pId AS CHARACTER):
-    IF {{entityName}}Service:Delete(pId) THEN RETURN "OK".
-    RETURN "ERROR".
-  END METHOD.
+  @openapi.openedge.export(type="rest", usereturnvalue="true").
+  method public character handledelete(i-id-c as character):
+    if {{entityName}}service:delete(i-id-c) then return "ok".
+    return "error".
+  end method.
 
-END CLASS.
+end class.

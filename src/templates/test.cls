@@ -1,39 +1,39 @@
-CLASS {{package}}.{{name}}Test INHERITS OpenEdge.ABLUnit.TestCase:
+class {{package}}.{{name}}test inherits openedge.ablunit.testcase:
 
-  DEFINE TEMP-TABLE tt{{entityName}} LIKE {{tableName}}.
-  DEFINE DATASET ds{{entityName}} FOR tt{{entityName}}.
+  define temp-table l-{{kebabName}}-tt like {{tableName}}.
+  define dataset l-{{kebabName}}-ds for l-{{kebabName}}-tt.
 
-  DEFINE VARIABLE oEntity AS {{entityName}} NO-UNDO.
+  define variable l-entity-o as {{entityName}} no-undo.
 
-  @Test.
-  METHOD PUBLIC VOID TestCreate():
-    CREATE tt{{entityName}}.
+  @test.
+  method public void testcreate():
+    create l-{{kebabName}}-tt.
     {{#each fields}}
-    tt{{../entityName}}.{{name}} = ?. /* TODO: set from {{name}} */{{/each}}
-    Assert:IsTrue(VALID-HANDLE(DATASET ds{{entityName}}:HANDLE)).
-  END METHOD.
+    l-{{kebabName}}-tt.{{name}} = ?. /* todo: set from {{name}} */{{/each}}
+    assert:istrue(valid-handle(dataset l-{{kebabName}}-ds:handle)).
+  end method.
 
-  @Test.
-  METHOD PUBLIC VOID TestSave():
-    oEntity = {{entityName}}:Create().
-    Assert:IsNotNull(oEntity).
+  @test.
+  method public void testsave():
+    l-entity-o = {{entityName}}:create().
+    assert:isnotnull(l-entity-o).
     {{#each fields}}
-    {{#if initial}}oEntity:{{name}} = {{initial}}.  /* {{name}} */{{/if}}
+    {{#if initial}}l-entity-o:{{name}} = {{initial}}.  /* {{name}} */{{/if}}
     {{/each}}
-    Assert:IsTrue(oEntity:Save()).
-  END METHOD.
+    assert:istrue(l-entity-o:save()).
+  end method.
 
-  @Test.
-  METHOD PUBLIC VOID TestRead():
-    oEntity = {{entityName}}:Read("key").
-    Assert:IsNotNull(oEntity).
-  END METHOD.
+  @test.
+  method public void testread():
+    l-entity-o = {{entityName}}:read("key").
+    assert:isnotnull(l-entity-o).
+  end method.
 
-  @Test.
-  METHOD PUBLIC VOID TestDelete():
-    oEntity = {{entityName}}:Read("key").
-    IF VALID-OBJECT(oEntity) THEN
-      Assert:IsTrue(oEntity:Delete()).
-  END METHOD.
+  @test.
+  method public void testdelete():
+    l-entity-o = {{entityName}}:read("key").
+    if valid-object(l-entity-o) then
+      assert:istrue(l-entity-o:delete()).
+  end method.
 
-END CLASS.
+end class.
