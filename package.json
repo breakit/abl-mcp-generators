@@ -17,7 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@breakit/abl-mcp-core": "^0.1.0"
+    "@breakit/abl-mcp-core": "git+https://github.com/breakit/abl-mcp-core"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
