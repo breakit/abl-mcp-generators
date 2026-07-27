@@ -130,9 +130,7 @@ src/templates/
 ├── business-task.cls        # Standalone task class with input/output datasets
 ├── test.cls                 # ABLUnit test with ProDataSet
 ├── entity-contract.i        # Shared dataset definition (include in BE/Service/Test)
-├── security-contract.i      # Authorization, logging, and metrics patterns
-└── abldoc/
-    └── index.html           # ABLDoc HTML template
+└── security-contract.i      # Authorization, logging, and metrics patterns
 ```
 
 ## OpenEdge Class Hierarchy
@@ -145,6 +143,39 @@ src/templates/
 | Service | Standalone |
 | Workflow | Standalone (`.cls` with step methods, delegates to BusinessTask) |
 | Business Task | Standalone (`.cls` with input/output datasets) |
+
+## Development
+
+```sh
+git clone https://github.com/breakit/abl-mcp-generators.git
+cd abl-mcp-generators
+yarn install
+yarn build
+```
+
+### Local Multi-Repo Development
+
+This repo is designed to work beside:
+
+- `../abl-mcp-core`
+- `../abl-mcp-server`
+- `../abl-mcp-contracts`
+- `../abl-mcp-doc`
+
+Documentation generators were extracted into `../abl-mcp-doc`.
+
+For local development, build `../abl-mcp-core` first, then rebuild this repo:
+
+```sh
+yarn build
+```
+
+To refresh the symlinked package graph used by `abl-mcp-server`, run this from `../abl-mcp-server`:
+
+```sh
+yarn build:local-deps
+yarn link:local-deps
+```
 
 ## Acknowledgments
 
