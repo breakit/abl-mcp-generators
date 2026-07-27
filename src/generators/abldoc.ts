@@ -1,8 +1,8 @@
 import type { AblDocEntry } from '@breakit/abl-mcp-core'
-import { readFileSync, readdirSync, statSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import { parseAblDoc } from '@breakit/abl-mcp-core'
+import { readFileSync, readdirSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -96,7 +96,7 @@ function renderSimple(template: string, context: Record<string, unknown>): strin
     const items = getNested(context, key) as unknown[]
     if (!Array.isArray(items)) return ''
     return items.map(item => {
-      return body.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (_, k) => {
+      return body.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (_: string, k: string) => {
         if (k === 'this') return String(item)
         const val = getNested(item as Record<string, unknown>, k)
         return val != null ? String(val) : ''

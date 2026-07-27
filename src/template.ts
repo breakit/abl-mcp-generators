@@ -41,7 +41,7 @@ function renderEach(template: string, ctx: Record<string, unknown>): string {
       result = result.replace(full, '')
       continue
     }
-    const out = arr.map(item => {
+    const out = arr.map((item: unknown) => {
       if (typeof item === 'object' && item != null) {
         return renderTemplate(body, { ...ctx, ...item as Record<string, unknown> })
       }
