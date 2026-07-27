@@ -12,5 +12,5 @@ export function generateTest(spec: TestSpec): string {
 
 export function scaffoldTest(spec: TestSpec): ScaffoldResult {
   const content = generateTest(spec)
-  return { file: `${spec.outputDir}/cls/test/${spec.name}Test.cls`, content }
+  return { file: `${spec.outputDir}/tests/${spec.name}/${spec.name}-test.cls`, content }
 }
