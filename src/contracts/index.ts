@@ -92,6 +92,21 @@ export interface ProjectFile {
   content: string
 }
 
+export interface ParamSpec {
+  paramName: string
+  direction: string
+  dataType: string
+}
+
+export interface MethodSpec {
+  methodName: string
+  visibility: string
+  returnType: string | null
+  hasParams: boolean
+  hasReturnType: boolean
+  params: ParamSpec[]
+}
+
 export interface TestSpec {
   package: string
   name: string
@@ -100,6 +115,8 @@ export interface TestSpec {
   description?: string
   fields: FieldSpec[]
   outputDir: string
+  sourcePath?: string
+  methods?: MethodSpec[]
 }
 
 export interface TestMethodSpec {

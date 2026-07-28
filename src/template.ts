@@ -15,8 +15,8 @@ export function renderTemplate(template: string, context: Record<string, unknown
   let result = renderEach(template, context)
 
   // Conditionals
-  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, key, body) => {
-    return context[key] ? body : ''
+  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g, (_, key, trueBody, falseBody) => {
+    return context[key] ? trueBody : (falseBody || '')
   })
 
   // Values
@@ -29,28 +29,59 @@ export function renderTemplate(template: string, context: Record<string, unknown
 }
 
 function renderEach(template: string, ctx: Record<string, unknown>): string {
-  // Find innermost {{#each KEY}}...{{/each}} and expand
-  const re = /\{\{#each (\w+)\}\}([\s\S]*?)\{\{\/each\}\}/
-  let result = template
-  let match: RegExpExecArray | null
+  const startRe = /\{\{#each (\w+)\}\}/
+  const eachRe = /\{\{#each \w+\}\}/g
+  const endRe = /\{\{\/each\}\}/g
 
-  while ((match = re.exec(result)) !== null) {
-    const [full, key, body] = match
-    const arr = ctx[key]
-    if (!Array.isArray(arr) || arr.length === 0) {
-      result = result.replace(full, '')
-      continue
+  const match = startRe.exec(template)
+  if (!match) return template
+
+  const key = match[1]
+  const bodyStart = match.index + match[0].length
+
+  let depth = 1
+  let searchPos = bodyStart
+  const eachReMatches: number[] = []
+  const endReMatches: number[] = []
+
+  while (depth > 0) {
+    eachRe.lastIndex = searchPos
+    endRe.lastIndex = searchPos
+
+    const eachMatch = eachRe.exec(template)
+    const endMatch = endRe.exec(template)
+
+    if (!endMatch) break
+
+    if (eachMatch && eachMatch.index < endMatch.index) {
+      depth++
+      searchPos = eachMatch.index + eachMatch[0].length
+    } else {
+      depth--
+      searchPos = endMatch.index + endMatch[0].length
     }
-    const out = arr.map((item: unknown) => {
-      if (typeof item === 'object' && item != null) {
-        return renderTemplate(body, { ...ctx, ...item as Record<string, unknown> })
-      }
-      return renderTemplate(body, { ...ctx, value: item })
-    }).join('')
-    result = result.replace(full, out)
+  }
+  if (depth !== 0) return template
+
+  const fullEnd = searchPos
+  const body = template.slice(bodyStart, fullEnd - '{{/each}}'.length)
+  const full = template.slice(match.index, fullEnd)
+
+  const arr = ctx[key]
+  if (!Array.isArray(arr) || arr.length === 0) {
+    return renderEach(template.replace(full, ''), ctx)
   }
 
-  return result
+  const out = arr.map((item: unknown, idx: number) => {
+    const itemCtx: Record<string, unknown> = typeof item === 'object' && item != null
+      ? { ...ctx, ...item as Record<string, unknown> }
+      : { ...ctx, value: item }
+    itemCtx.first = idx === 0
+    itemCtx.notfirst = idx > 0
+    return renderTemplate(body, itemCtx)
+  }).join('')
+
+  return renderEach(template.replace(full, out), ctx)
 }
 
 export function loadTemplate(name: string): string {
