@@ -17,6 +17,8 @@ function requirePackage(spec: ComponentSpec): string {
  */
 export const defaultLegacyNaming: LegacyNamingStrategy = {
   packageOf: spec => requirePackage(spec),
+  /** Pages go directly into the output root, flat. */
+  pageFile: spec => join(spec.outputDir, `${spec.name}.htm`),
   backendFile: spec =>
     join(spec.outputDir, spec.sourceRoot ?? SOURCE_ROOT, requirePackage(spec).replace(/\./g, '/'), `${spec.name}.cls`),
 }
@@ -34,4 +36,19 @@ registerComponent({
     const n = resolveLegacyNaming(naming)
     return { segments: [], package: n.packageOf(spec), file: n.backendFile(spec) }
   },
+})
+
+registerComponent({
+  kind: 'legacy-page',
+  template: () => 'legacy/page.htm',
+  segments: () => [],
+  fileName: spec => `${spec.name}.htm`,
+  locate: (spec, naming): ResolvedLocation => {
+    const n = resolveLegacyNaming(naming)
+    return { segments: [], package: '', file: n.pageFile(spec) }
+  },
+  context: spec => ({
+    // backend class instantiated inline by the page; supplied by the caller (package.Class)
+    backendClass: spec.backendClass ?? '',
+  }),
 })

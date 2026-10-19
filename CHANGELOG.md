@@ -9,6 +9,7 @@
 - CQRS components `command`, `command-handler`, `query`, `query-handler` (per operation, via `spec.operation`), placed in `command/{command,handler}` and `query/{query,handler}`. `scaffoldEntity` takes `commands` / `queries` (defaults: Create, Update, Delete / GetById, List).
 - `service` variant `cqrs`: a facade that only dispatches to the generated handlers (default variant unchanged).
 - `legacy-backend` component (stub) with a per-call `naming` strategy (`packageOf`, `backendFile`; partial overrides, defaults mirror the caller's package).
+- `legacy-page` component (stub): single `.htm` with SpeedScript initialisation, JavaScript and HTML placeholders, placed flat in the output root; `naming.pageFile` overrides the path.
 - `toPascal` helper.
 - Templates are stored as `*.tpl` so ABL tooling does not parse placeholder syntax.
 

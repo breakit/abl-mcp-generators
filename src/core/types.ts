@@ -15,6 +15,7 @@ export type ComponentKind =
   | 'query'
   | 'query-handler'
   | 'legacy-backend'
+  | 'legacy-page'
 
 /** Minimal input every component needs. Component-specific fields are passed through to templates. */
 export interface ComponentSpec {
@@ -48,6 +49,8 @@ export interface LegacyNamingStrategy {
   packageOf(spec: ComponentSpec): string
   /** Relative file path of the backend `.cls`. */
   backendFile(spec: ComponentSpec): string
+  /** Relative file path of the webspeed `.htm` page. */
+  pageFile(spec: ComponentSpec): string
 }
 
 /** Where a component lives, resolved by the layout. */

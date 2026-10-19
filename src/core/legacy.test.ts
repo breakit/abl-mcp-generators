@@ -68,3 +68,33 @@ describe('naming strategy per call', () => {
     expect(r.files[0].file).toBe('a/B.cls')
   })
 })
+
+describe('legacy-page', () => {
+  const page = { ...spec, name: 'employee', backendClass: 'sagedpw.employee.EmployeeManager' }
+
+  it('is a single flat .htm in the output root', () => {
+    const r = generateComponent('legacy-page', page)
+    expect(r.file).toBe('out/employee.htm')
+    expect(r.content).not.toMatch(/\{\{/)
+  })
+
+  it('instantiates the backend and renders its variables', () => {
+    const c = generateComponent('legacy-page', page).content
+    expect(c).toContain('l-backend-o = new sagedpw.employee.EmployeeManager().')
+    expect(c).toContain('<%= l-backend-o:EmpNum %>')
+    expect(c).toContain('language="SpeedScript"')
+  })
+
+  it('uses a per-call pageFile strategy, independent of the backend', () => {
+    const r = generateComponent('legacy-page', page, { naming: { pageFile: s => `web/${s.name}.htm` } })
+    expect(r.file).toBe('web/employee.htm')
+    expect(generateComponent('legacy-backend', spec, { naming: { pageFile: () => 'z' } }).file)
+      .toBe('out/src/sagedpw/employee/EmployeeManager.cls')
+  })
+
+  it('works without outputDir and can be scaffolded with the backend', () => {
+    expect(generateComponent('legacy-page', { name: 'x' }).file).toBe('x.htm')
+    const r = scaffoldEntity(page, { include: ['legacy-backend', 'legacy-page'] })
+    expect(r.files.map(f => f.file)).toEqual(['out/src/sagedpw/employee/employee.cls', 'out/employee.htm'])
+  })
+})
