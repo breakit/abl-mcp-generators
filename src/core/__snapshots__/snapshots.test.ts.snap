@@ -772,7 +772,7 @@ class com.acme.Customer.query.query.GetByIdCustomerQuery:
 
   define public property CustNum as INTEGER no-undo get. set.
 
-  /* todo: add paging / sorting criteria if needed */
+  /* todo: add sorting criteria if needed */
 
 end class.
 "
@@ -781,7 +781,7 @@ end class.
 exports[`every component (snapshots) > query > file 1`] = `"out/src/com/acme/Customer/query/query/GetByIdCustomerQuery.cls"`;
 
 exports[`every component (snapshots) > query-handler > content 1`] = `
-"/* handler for com.acme.Customer.query.query.GetByIdCustomerQuery — read-only, must not change state */
+"/* handler for com.acme.Customer.query.query.GetByIdCustomerQuery — read-only, must not change state; reads through the unchanged business entity */
 class com.acme.Customer.query.handler.GetByIdCustomerQueryHandler:
 
   define variable l-be-o as com.acme.Customer.business.Customer no-undo.
@@ -791,12 +791,20 @@ class com.acme.Customer.query.handler.GetByIdCustomerQueryHandler:
   end constructor.
 
   /*
-   * execute — run the query and return the result dataset.
-   * todo: translate query properties into a filter for l-be-o:getdata().
+   * execute — turn the query criteria into a filter and read through the business entity.
+   * todo: authorization; paging and sorting once the entity supports them.
    */
   method public handle execute(input i-query-o as com.acme.Customer.query.query.GetByIdCustomerQuery):
-    /* todo: authorization, filtering */
-    return l-be-o:getdata(?).
+    define variable l-filter-c  as character no-undo.
+    define variable l-request-o as openedge.businesslogic.getdatarequest no-undo.
+
+    l-filter-c = "".
+    l-filter-c = l-filter-c + (if l-filter-c > "" then " and " else "") + "CustNum = " + string(i-query-o:CustNum).
+    if l-filter-c > "" then l-filter-c = "where " + l-filter-c.
+
+    l-request-o = new openedge.businesslogic.getdatarequest().
+    l-request-o:setfilter(l-filter-c).
+    return l-be-o:getdata(l-request-o).
   end method.
 
 end class.

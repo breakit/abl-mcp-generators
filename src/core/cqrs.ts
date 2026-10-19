@@ -89,6 +89,7 @@ function def(kind: Part, template: string, dependsOn: ComponentKind[]) {
       return {
         operation: op,
         operationKind: resolved.kind,
+        isList: resolved.kind === 'list',
         // payload per operation kind; replaces the entity field list for command/query templates
         fields: resolved.fields,
         task: resolved.task,
@@ -131,4 +132,20 @@ registerComponent({
   },
 })
 def('query', 'query.cls', [])
-def('query-handler', 'query-handler.cls', ['query', 'business-entity'])
+registerComponent({
+  kind: 'query-handler',
+  template: () => 'cqrs/query-handler.cls',
+  segments: () => [...SEGMENTS['query-handler']],
+  fileName: spec => `${cqrsClassName('query-handler', spec)}.cls`,
+  dependsOn: ['query', 'business-entity'],
+  context: spec => {
+    const resolved = operationOf(spec)
+    return {
+      operation: resolved.name,
+      operationKind: resolved.kind,
+      // character-like values must be quoted in the filter, numbers not
+      fields: resolved.fields.map(f => ({ ...f, quoted: /^(char|longchar|date|datetime|clob|raw)/i.test(f.dataType) })),
+      queryFqn: cqrsFqn('query', spec, resolved.name),
+    }
+  },
+})

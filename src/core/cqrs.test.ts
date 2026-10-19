@@ -95,7 +95,8 @@ describe('scaffoldEntity with CQRS', () => {
     expect(by('CreateCustomerCommand.cls')).toContain('property Name')
     expect(by('DeleteCustomerCommand.cls')).toContain('property CustNum')
     expect(by('DeleteCustomerCommand.cls')).not.toContain('property Name')
-    expect(by('ListCustomerQuery.cls')).not.toContain('property')
+    expect(by('ListCustomerQuery.cls')).not.toContain('property CustNum')
+    expect(by('ListCustomerQuery.cls')).toContain('property Skip')
   })
 
   it('supports custom operations and a handler-only run with a warning', () => {
@@ -199,5 +200,42 @@ describe('command handler bodies', () => {
     const t = scaffoldEntity(keyed, { include: ['command', 'command-handler', 'command-result'], commands: [{ name: 'Approve', task: 'X' }] })
     expect(t.warnings.map(w => w.missing)).not.toContain('task')
     expect(() => generateComponent('task', { ...keyed, inputFields: [], outputFields: [] })).not.toThrow()
+  })
+})
+
+describe('query side', () => {
+  const keyed = {
+    ...spec,
+    fields: [
+      { name: 'Region', dataType: 'CHARACTER', key: true },
+      { name: 'CustNum', dataType: 'INTEGER', key: true },
+      { name: 'Name', dataType: 'CHARACTER' },
+    ],
+  }
+  const h = (operation: unknown) => generateComponent('query-handler', { ...keyed, operation } as never).content
+
+  it('GetById builds a filter from the key fields, quoting character values only', () => {
+    const c = h('GetById')
+    expect(c).toContain('"Region = " + quoter(string(i-query-o:Region))')
+    expect(c).toContain('"CustNum = " + string(i-query-o:CustNum)')
+    expect(c).not.toContain('i-query-o:Name')
+    expect(c).toContain('l-request-o:setfilter(l-filter-c)')
+    expect(c).toContain('return l-be-o:getdata(l-request-o)')
+  })
+
+  it('List has no criteria, only paging properties on the query', () => {
+    expect(h('List')).not.toContain('i-query-o:')
+    const q = generateComponent('query', { ...keyed, operation: 'List' }).content
+    expect(q).toContain('property Skip')
+    expect(q).toContain('property Top')
+  })
+
+  it('custom queries filter on the listed fields', () => {
+    const c = h({ name: 'FindByName', fields: ['Name'] })
+    expect(c).toContain('"Name = " + quoter(string(i-query-o:Name))')
+  })
+
+  it('GetById query has no paging', () => {
+    expect(generateComponent('query', { ...keyed, operation: 'GetById' }).content).not.toContain('Skip')
   })
 })
