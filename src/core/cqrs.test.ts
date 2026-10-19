@@ -106,7 +106,7 @@ describe('scaffoldEntity with CQRS', () => {
 
   it('full stack with facade is consistent', () => {
     const r = scaffoldEntity(spec, {
-      include: ['contract', 'business-entity', ...kinds, 'service'],
+      include: ['contract', 'business-entity', 'command-result', ...kinds, 'service'],
       variants: { service: 'cqrs' },
     })
     expect(r.warnings).toEqual([])
@@ -123,5 +123,25 @@ describe('scaffoldEntity with CQRS', () => {
       const pkg = /^class ([\w.]+)\.\w+:/m.exec(f.content)![1]
       expect(f.file.replace(/^out\/src\//, '').split('/').slice(0, -1).join('.'), f.file).toBe(pkg)
     }
+  })
+})
+
+describe('command-result', () => {
+  it('is one class per entity in command/result', () => {
+    const r = generateComponent('command-result', spec)
+    expect(r.file).toBe('out/src/com/acme/Customer/command/result/CustomerCommandResult.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.result.CustomerCommandResult:')
+    expect(r.content).toContain('define public property Success as logical')
+    expect(r.content).toContain('method public void collecterrors(input i-dataset-h as handle)')
+    expect(r.content).not.toMatch(/\{\{/)
+  })
+
+  it('needs no operation and can be generated alone', () => {
+    expect(() => generateComponent('command-result', spec)).not.toThrow()
+  })
+
+  it('handlers warn when it is missing', () => {
+    const r = scaffoldEntity(spec, { include: ['command-handler'], commands: ['Create'] })
+    expect(r.warnings.map(w => w.missing)).toContain('command-result')
   })
 })

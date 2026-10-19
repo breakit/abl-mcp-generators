@@ -30,6 +30,7 @@ export function renderComponent(
     // cross-component references (fully qualified, since each part lives in its own package)
     entityFqn: `${packageOf('business-entity', spec)}.${entity}`,
     serviceFqn: `${packageOf('service', spec)}.${toPascal(spec.name)}Service`,
+    resultFqn: `${packageOf('command-result', spec)}.${toPascal(spec.name)}CommandResult`,
     // include path relative to the source root (propath entry)
     contractInclude: [packagePath(spec), entityFolder(spec), 'contract', `${toKebab(entity)}-contract.i`]
       .filter(Boolean)

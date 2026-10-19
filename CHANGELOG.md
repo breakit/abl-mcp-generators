@@ -12,6 +12,7 @@
 - `legacy-page` component (stub): single `.htm` with SpeedScript initialisation, JavaScript and HTML placeholders, placed flat in the output root; `naming.pageFile` overrides the path.
 - Golden-file snapshot tests for every component and variant, plus layout invariants (directory equals package).
 - Operation model: `commands` / `queries` accept names or `OperationSpec { name, kind, fields, task }`; `FieldSpec.key` marks key fields (composite keys). Payloads: create/update carry all fields, delete/get the key fields, list/custom none unless `fields` is given. `task` is an optional link to a Business Task; commands and tasks never require each other.
+- `command-result` component: one `<Entity>CommandResult` per entity in `command/result/` (success, errors, key; `collecterrors` reads buffer `error-string`s after `updatedata`/`deletedata`). Command handlers list it as a dependency.
 - `toPascal` helper.
 - Templates are stored as `*.tpl` so ABL tooling does not parse placeholder syntax.
 

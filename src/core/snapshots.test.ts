@@ -40,7 +40,7 @@ describe('every component (snapshots)', () => {
 })
 
 describe('layout invariants', () => {
-  const entityKinds = ['contract', 'business-entity', 'service', 'controller', 'command', 'command-handler', 'query', 'query-handler'] as const
+  const entityKinds = ['command-result', 'contract', 'business-entity', 'service', 'controller', 'command', 'command-handler', 'query', 'query-handler'] as const
 
   it('every class sits in the directory equal to its package', () => {
     const files = entityKinds.flatMap(k => scaffoldEntity({ ...base, operation: 'Create' }, { include: [k] }).files)
@@ -57,7 +57,7 @@ describe('layout invariants', () => {
 
   it('every registered kind is covered by the snapshot suite', () => {
     expect(listComponents().sort()).toEqual(
-      ['business-entity', 'command', 'command-handler', 'contract', 'controller', 'legacy-backend', 'legacy-page',
+      ['business-entity', 'command', 'command-handler', 'command-result', 'contract', 'controller', 'legacy-backend', 'legacy-page',
         'query', 'query-handler', 'service', 'task', 'test', 'workflow'].sort(),
     )
   })

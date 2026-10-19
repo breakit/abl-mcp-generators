@@ -39,6 +39,11 @@ const SUFFIX: Record<Part, string> = {
   'query-handler': 'QueryHandler',
 }
 
+/** Class name of the per-entity command result, e.g. CustomerCommandResult. */
+export function resultClassName(spec: ComponentSpec): string {
+  return `${toPascal(spec.name)}CommandResult`
+}
+
 /** Class name of a command/query part, e.g. CreateCustomerCommand. */
 export function cqrsClassName(part: Part, spec: ComponentSpec, op: string = operation(spec)): string {
   return `${toPascal(op)}${spec.name}${SUFFIX[part]}`
@@ -90,6 +95,13 @@ function def(kind: Part, template: string, dependsOn: ComponentKind[]) {
 }
 
 def('command', 'command.cls', [])
-def('command-handler', 'command-handler.cls', ['command', 'business-entity'])
+registerComponent({
+  kind: 'command-result',
+  template: () => 'cqrs/command-result.cls',
+  segments: () => ['command', 'result'],
+  fileName: spec => `${resultClassName(spec)}.cls`,
+})
+
+def('command-handler', 'command-handler.cls', ['command', 'command-result', 'business-entity'])
 def('query', 'query.cls', [])
 def('query-handler', 'query-handler.cls', ['query', 'business-entity'])
