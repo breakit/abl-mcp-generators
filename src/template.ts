@@ -84,9 +84,12 @@ function renderEach(template: string, ctx: Record<string, unknown>): string {
   return renderEach(template.replace(full, out), ctx)
 }
 
+/** Templates are stored as `<name>.tpl` so ABL tooling (LSP, formatters) does not parse them as ABL. */
+export const TEMPLATE_EXT = '.tpl'
+
 export function loadTemplate(name: string): string {
-  const path = join(TEMPLATES_DIR, name)
-  return readFileSync(path, 'utf-8')
+  const file = name.endsWith(TEMPLATE_EXT) ? name : name + TEMPLATE_EXT
+  return readFileSync(join(TEMPLATES_DIR, file), 'utf-8')
 }
 
 export function loadAndRender(name: string, context: Record<string, unknown>): string {

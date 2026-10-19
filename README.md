@@ -122,15 +122,15 @@ define dataset l-customer-ds for l-customer-tt.
 ## Templates
 
 ```
-src/templates/
-├── business-entity.cls      # BE with REST annotations + ProDataSet
-├── service.cls              # Service with REST annotations
-├── controller.cls           # WebHandler-based REST controller
-├── business-workflow.cls    # Workflow class with Execute + step methods
-├── business-task.cls        # Standalone task class with input/output datasets
-├── test.cls                 # ABLUnit test with ProDataSet
-├── entity-contract.i        # Shared dataset definition (include in BE/Service/Test)
-└── security-contract.i      # Authorization, logging, and metrics patterns
+src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LSP from parsing them
+├── business-entity.cls.tpl  # BE with REST annotations + ProDataSet
+├── service.cls.tpl          # Service with REST annotations
+├── controller.cls.tpl       # WebHandler-based REST controller
+├── business-workflow.cls.tpl# Workflow class with Execute + step methods
+├── business-task.cls.tpl    # Standalone task class with input/output datasets
+├── test.cls.tpl             # ABLUnit test with ProDataSet
+├── entity-contract.i.tpl    # Shared dataset definition (include in BE/Service/Test)
+└── security-contract.i      # (static ABL, not a template) Authorization, logging, and metrics patterns
 ```
 
 ## OpenEdge Class Hierarchy
