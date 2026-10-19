@@ -1,64 +1,43 @@
-import { loadAndRender, toKebab } from '../template.js'
+import { renderComponent } from '../core/render.js'
+import '../core/components.js'
+import { scaffoldEntity } from '../core/api.js'
+import type { ComponentSpec } from '../core/types.js'
 import type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult } from '../contracts/index.js'
 
 export type { FieldSpec, BusinessEntitySpec, ServiceSpec, ControllerSpec, FullEntityScaffold, ScaffoldResult }
 
+/*
+ * Compatibility wrappers over the component API (see core/api.ts).
+ * Prefer generateComponent / scaffoldEntity in new code.
+ */
+
+/** @deprecated use generateComponent('business-entity', ...) */
 export function generateBusinessEntity(spec: BusinessEntitySpec): string {
-  return loadAndRender('business-entity.cls', {
-    ...spec,
-    kebabName: toKebab(spec.name),
-  } as unknown as Record<string, unknown>)
+  return renderComponent('business-entity', spec as unknown as ComponentSpec).content
 }
 
+/** @deprecated use generateComponent('contract', ...) */
 export function generateEntityContract(spec: { entityName: string; tableName: string }): string {
-  return loadAndRender('entity-contract.i', {
-    entityName: spec.entityName,
-    tableName: spec.tableName,
-    kebabName: toKebab(spec.entityName),
-  } as unknown as Record<string, unknown>)
+  return renderComponent('contract', { package: '', name: spec.entityName, tableName: spec.tableName }).content
 }
 
+/** @deprecated use generateComponent('service', ...) */
 export function generateService(spec: ServiceSpec): string {
-  return loadAndRender('service.cls', {
-    ...spec,
-    kebabName: toKebab(spec.entityName),
-  } as unknown as Record<string, unknown>)
+  return renderComponent('service', { package: spec.package, name: spec.name, entity: spec.entityName }).content
 }
 
+/** @deprecated use generateComponent('controller', ...) */
 export function generateController(spec: ControllerSpec): string {
-  return loadAndRender('controller.cls', {
-    ...spec,
-    kebabName: toKebab(spec.entityName),
-  } as unknown as Record<string, unknown>)
+  return renderComponent('controller', { package: spec.package, name: spec.name, entity: spec.entityName }).content
 }
 
+/** @deprecated use scaffoldEntity */
 export function scaffoldFullEntity(spec: FullEntityScaffold): ScaffoldResult[] {
-  const results: ScaffoldResult[] = []
-
-  const contract = generateEntityContract({ entityName: spec.entityName, tableName: spec.tableName })
-  results.push({ file: `${spec.outputDir}/contracts/${toKebab(spec.entityName)}-contract.i`, content: contract })
-
-  const be = generateBusinessEntity({
+  return scaffoldEntity({
     package: spec.package,
     name: spec.entityName,
     tableName: spec.tableName,
     fields: spec.fields,
-  })
-  results.push({ file: `${spec.outputDir}/cls/business/${spec.entityName}.cls`, content: be })
-
-  const svc = generateService({
-    package: spec.package,
-    name: spec.entityName,
-    entityName: spec.entityName,
-  })
-  results.push({ file: `${spec.outputDir}/cls/service/${spec.entityName}Service.cls`, content: svc })
-
-  const ctrl = generateController({
-    package: spec.package,
-    name: spec.entityName,
-    entityName: spec.entityName,
-  })
-  results.push({ file: `${spec.outputDir}/cls/controller/${spec.entityName}Controller.cls`, content: ctrl })
-
-  return results
+    outputDir: spec.outputDir,
+  }).files
 }

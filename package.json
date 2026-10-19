@@ -1,7 +1,7 @@
 {
   "name": "@breakit/abl-mcp-generators",
-  "version": "0.1.0",
-  "description": "ABL code scaffolding \u2014 business entities, workflows, CCS layer",
+  "version": "0.2.0",
+  "description": "ABL code scaffolding — business entities, workflows, CCS layer",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

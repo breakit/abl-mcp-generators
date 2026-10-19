@@ -15,10 +15,10 @@ describe('scaffoldCcsLayer', () => {
 
   it('emits contract, entity, service and controller files', () => {
     expect(result.files.map(f => f.file)).toEqual([
-      'contracts/customer-entity-contract.i',
-      'cls/business/CustomerEntity.cls',
-      'cls/service/CustomerEntityService.cls',
-      'cls/controller/CustomerEntityController.cls',
+      'src/com/test/CustomerEntity/contract/customer-entity-contract.i',
+      'src/com/test/CustomerEntity/business/CustomerEntity.cls',
+      'src/com/test/CustomerEntity/service/CustomerEntityService.cls',
+      'src/com/test/CustomerEntity/controller/rest/CustomerEntityController.cls',
     ])
   })
 

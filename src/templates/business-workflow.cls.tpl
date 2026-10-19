@@ -1,6 +1,6 @@
 @openapi.openedge.export file (type="rest", executionmode="singleton").
 {{#if description}}/* {{description}} */{{/if}}
-class {{package}}.workflows.{{name}}:
+class {{package}}.{{className}}:
 
   define temp-table l-context-tt no-undo
     field workflowid    as character

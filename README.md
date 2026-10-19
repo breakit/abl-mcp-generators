@@ -119,19 +119,118 @@ define temp-table l-customer-tt no-undo
 define dataset l-customer-ds for l-customer-tt.
 ```
 
+## Output layout
+
+One folder per business entity; every part lives in its own sub-folder and its class package mirrors that folder:
+
+```
+<out>/<source_root>/<package path>/<Entity>/
+  business/   contract/   service/   workflow/   task/
+  controller/<api>/            (rest by default)
+  command/{command,handler}/   query/{query,handler}/
+<out>/<test_root>/<package path>/<Entity>/   (tests, separate tree)
+```
+
+`<Entity>` is PascalCase (`order-item` -> `OrderItem`), so folders and packages contain no hyphens, and the directory below the root always equals the class package.
+
+```ts
+import { generateComponent, scaffoldEntity } from '@breakit/abl-mcp-generators'
+
+// one part
+generateComponent('service', { package: 'com.acme', name: 'Customer' })
+
+// any subset; missing references are reported in `warnings`
+scaffoldEntity(spec, { include: ['business-entity', 'contract'] })
+scaffoldEntity(spec, { variants: { controller: 'soap' } })
+```
+
+The roots are pre-defined in `abl.toml` (written by `scaffoldProject`) and reused by the generators:
+
+```toml
+[project]
+package = "com.acme"
+
+[paths]
+source_root = "src"
+test_root = "test"
+```
+
+```ts
+import { loadProjectConfig, scaffoldEntity } from '@breakit/abl-mcp-generators'
+
+const config = loadProjectConfig('path/to/project')   // abl.toml or its directory
+scaffoldEntity({ name: 'Customer', tableName: 'CUSTOMER', fields }, { config })
+// -> src/com/acme/Customer/...   (explicit spec.package / sourceRoot / testRoot win over the config)
+```
+
+CQRS: commands and queries are generated per operation, and every command/query has its own handler class in a separate sub-folder:
+
+```ts
+generateComponent('command', { ...spec, operation: 'Create' })   // command/command/CreateCustomerCommand.cls
+generateComponent('command-handler', { ...spec, operation: 'Create' })
+scaffoldEntity(spec, {
+  include: ['command', 'command-handler', 'query', 'query-handler', 'service'],
+  commands: ['Create', 'Approve'],         // default: Create, Update, Delete
+  queries: ['GetById', 'List'],            // default: GetById, List
+  variants: { service: 'cqrs' },           // facade dispatching to the handlers (default variant talks to the BE directly)
+})
+```
+
+Legacy backend (stub): one monolithic class with public variables for the WebSpeed page and JSON CRUD methods. It lives in the caller's old-style domain package, outside the entity folder, and is self-contained. Package and file path are configurable per call:
+
+```ts
+generateComponent('legacy-backend', { package: 'sagedpw.employee', name: 'EmployeeManager', fields })
+// -> src/sagedpw/employee/EmployeeManager.cls
+generateComponent('legacy-backend', spec, { naming: { backendFile: s => `legacy/${s.name}.cls` } })
+
+// webspeed page: one .htm, flat in the output root, instantiates the backend class
+generateComponent('legacy-page', { name: 'employee', backendClass: 'sagedpw.employee.EmployeeManager', fields })
+// -> employee.htm   (override with naming.pageFile)
+```
+
+Whole project in one call:
+
+```ts
+scaffoldProject({
+  name: 'demo', package: 'com.acme', outputDir: 'out',
+  entities: [{ name: 'Customer', tableName: 'CUSTOMER', fields,
+    include: ['contract', 'business-entity', 'command', 'command-handler', 'command-result', 'service'],
+    commands: ['Create', { name: 'Approve', task: 'ApproveCustomer' }], variants: { service: 'cqrs' } }],
+})
+```
+
+Use cases: `scaffoldCommand(spec, 'Create')` generates command + handler + handler test; `scaffoldQuery` generates query + handler.
+Operations are names or `{ name, kind, fields, task }`; mark key fields with `key: true`. A `task` is optional and only generated when requested.
+
+Contract includes resolve against the source root: `com/acme/Customer/contract/customer-contract.i`. See CHANGELOG.md for migration notes.
+
 ## Templates
 
 ```
-src/templates/
-├── business-entity.cls      # BE with REST annotations + ProDataSet
-├── service.cls              # Service with REST annotations
-├── controller.cls           # WebHandler-based REST controller
-├── business-workflow.cls    # Workflow class with Execute + step methods
-├── business-task.cls        # Standalone task class with input/output datasets
-├── test.cls                 # ABLUnit test with ProDataSet
-├── entity-contract.i        # Shared dataset definition (include in BE/Service/Test)
-└── security-contract.i      # Authorization, logging, and metrics patterns
+src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LSP from parsing them
+├── business-entity.cls.tpl  # BE with REST annotations + ProDataSet
+├── service.cls.tpl          # Service with REST annotations
+├── cqrs/                    # command, command-handler, query, query-handler, service facade
+├── legacy/backend.cls.tpl   # monolithic legacy backend class (stub)
+├── legacy/page.htm.tpl      # webspeed page: html + javascript + speedscript (stub)
+├── controller/
+│   ├── rest/controller.cls.tpl  # WebHandler-based REST controller
+│   └── soap/controller.cls.tpl  # SOAP controller (dataset in/out)
+├── business-workflow.cls.tpl# Workflow class with Execute + step methods
+├── business-task.cls.tpl    # Standalone task class with input/output datasets
+├── test.cls.tpl             # ABLUnit test with ProDataSet
+├── entity-contract.i.tpl    # Shared dataset definition (include in BE/Service/Test)
+└── security-contract.i      # (static ABL, not a template) Authorization, logging, and metrics patterns
 ```
+
+## OpenEdge 11.7 compatibility
+
+The generated code targets OpenEdge 11.7: no `Ccs.*` interfaces and no 12.x-only classes. There is no compiler in this repo, so the generated ABL has not been compiled. Known points to check on your system:
+
+- `query-handler` builds a request with `openedge.businesslogic.getdatarequest` (the entity template's convention). `OpenEdge.BusinessLogic.GetDataRequest` exists from 12.x; on 11.7 use your own request class.
+- Command handlers use `updatedata`/`deletedata` row-state, so the contract temp-table needs a `before-table` (the current `entity-contract.i` does not define one).
+- Test templates assume the ABLUnit annotations `@Test`, `@Setup`, `@TearDown`, `@Ignore` and `OpenEdge.Core.Assert`; the older `test.cls` template uses `@BeforeAll`/`@AfterAll`, which should be checked against your ABLUnit version.
+- The SOAP controller annotation and the legacy `~{~}` escapes are written from memory.
 
 ## OpenEdge Class Hierarchy
 

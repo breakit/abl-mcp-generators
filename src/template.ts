@@ -123,14 +123,26 @@ function renderEach(template: string, ctx: Record<string, unknown>): string {
   return renderEach(template.replace(full, out), ctx)
 }
 
+/** Templates are stored as `<name>.tpl` so ABL tooling (LSP, formatters) does not parse them as ABL. */
+export const TEMPLATE_EXT = '.tpl'
+
 export function loadTemplate(name: string): string {
-  const path = join(TEMPLATES_DIR, name)
-  return readFileSync(path, 'utf-8')
+  const file = name.endsWith(TEMPLATE_EXT) ? name : name + TEMPLATE_EXT
+  return readFileSync(join(TEMPLATES_DIR, file), 'utf-8')
 }
 
 export function loadAndRender(name: string, context: Record<string, unknown>): string {
   const template = loadTemplate(name)
   return renderTemplate(template, context)
+}
+
+/** `order-item` / `orderItem` / `order_item` -> `OrderItem`. Existing inner casing is kept. */
+export function toPascal(name: string): string {
+  return name
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map(w => w[0].toUpperCase() + w.slice(1))
+    .join('')
 }
 
 export function toKebab(name: string): string {

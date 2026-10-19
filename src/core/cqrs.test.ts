@@ -1,0 +1,273 @@
+import { describe, it, expect } from 'vitest'
+import { generateComponent, scaffoldEntity } from './index.js'
+
+const spec = {
+  package: 'com.acme',
+  name: 'Customer',
+  tableName: 'CUSTOMER',
+  fields: [
+    { name: 'CustNum', dataType: 'INTEGER' },
+    { name: 'Name', dataType: 'CHARACTER' },
+  ],
+  outputDir: 'out',
+}
+
+describe('single command / query parts', () => {
+  it('command goes to command/command', () => {
+    const r = generateComponent('command', { ...spec, operation: 'create' })
+    expect(r.file).toBe('out/src/com/acme/Customer/command/command/CreateCustomerCommand.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.command.CreateCustomerCommand:')
+    expect(r.content).toContain('define public property CustNum as INTEGER no-undo get. set.')
+  })
+
+  it('command handler goes to command/handler and references its command', () => {
+    const r = generateComponent('command-handler', { ...spec, operation: 'Create' })
+    expect(r.file).toBe('out/src/com/acme/Customer/command/handler/CreateCustomerCommandHandler.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.handler.CreateCustomerCommandHandler:')
+    expect(r.content).toContain('input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand')
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult execute(')
+    expect(r.content).toContain('as com.acme.Customer.business.Customer no-undo')
+  })
+
+  it('query and query handler mirror the command split', () => {
+    const q = generateComponent('query', { ...spec, operation: 'GetById' })
+    const h = generateComponent('query-handler', { ...spec, operation: 'GetById' })
+    expect(q.file).toBe('out/src/com/acme/Customer/query/query/GetByIdCustomerQuery.cls')
+    expect(h.file).toBe('out/src/com/acme/Customer/query/handler/GetByIdCustomerQueryHandler.cls')
+    expect(h.content).toContain('input i-query-o as com.acme.Customer.query.query.GetByIdCustomerQuery')
+  })
+
+  it('requires an operation', () => {
+    expect(() => generateComponent('command', spec)).toThrow(/operation/)
+  })
+
+  it('leaves no placeholders', () => {
+    for (const k of ['command', 'command-handler', 'query', 'query-handler'] as const) {
+      expect(generateComponent(k, { ...spec, operation: 'X' }).content).not.toMatch(/\{\{/)
+    }
+  })
+})
+
+describe('service facade', () => {
+  it('dispatches to the default handlers', () => {
+    const r = generateComponent('service', spec, { variant: 'cqrs' })
+    expect(r.file).toBe('out/src/com/acme/Customer/service/CustomerService.cls')
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult create(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand)')
+    expect(r.content).toContain('method public handle getById(input i-query-o as com.acme.Customer.query.query.GetByIdCustomerQuery)')
+    expect(r.content).toContain('l-create-command-handler-o = new com.acme.Customer.command.handler.CreateCustomerCommandHandler()')
+    expect(r.content).toContain('return l-list-query-handler-o:execute(i-query-o)')
+    expect(r.content).not.toMatch(/\{\{/)
+  })
+
+  it('uses custom operations', () => {
+    const r = generateComponent('service', { ...spec, commands: ['Approve'], queries: [] }, { variant: 'cqrs' })
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult approve(')
+    expect(r.content).not.toContain('create(')
+    expect(r.content).not.toContain('method public handle')
+  })
+
+  it('default variant is unchanged', () => {
+    expect(generateComponent('service', spec).content).toContain('l-be-o:getdata(?)')
+  })
+})
+
+describe('scaffoldEntity with CQRS', () => {
+  const kinds = ['command', 'command-handler', 'query', 'query-handler'] as const
+
+  it('generates the default CRUD set', () => {
+    const r = scaffoldEntity(spec, { include: [...kinds] })
+    const names = r.files.map(f => f.file.split('/').pop())
+    expect(names).toEqual([
+      'CreateCustomerCommand.cls', 'UpdateCustomerCommand.cls', 'DeleteCustomerCommand.cls',
+      'CreateCustomerCommandHandler.cls', 'UpdateCustomerCommandHandler.cls', 'DeleteCustomerCommandHandler.cls',
+      'GetByIdCustomerQuery.cls', 'ListCustomerQuery.cls',
+      'GetByIdCustomerQueryHandler.cls', 'ListCustomerQueryHandler.cls',
+    ])
+    expect(r.warnings.map(w => w.missing)).toEqual(
+      expect.arrayContaining(['business-entity']),
+    )
+    expect(r.warnings.some(w => w.missing === 'command')).toBe(false)
+  })
+
+  it('default payloads: create has all fields, delete the key, list none', () => {
+    const r = scaffoldEntity(spec, { include: ['command', 'query'] })
+    const by = (n: string) => r.files.find(f => f.file.endsWith(n))!.content
+    expect(by('CreateCustomerCommand.cls')).toContain('property Name')
+    expect(by('DeleteCustomerCommand.cls')).toContain('property CustNum')
+    expect(by('DeleteCustomerCommand.cls')).not.toContain('property Name')
+    expect(by('ListCustomerQuery.cls')).not.toContain('property CustNum')
+    expect(by('ListCustomerQuery.cls')).toContain('property Skip')
+  })
+
+  it('supports custom operations and a handler-only run with a warning', () => {
+    const r = scaffoldEntity(spec, { include: ['command-handler'], commands: ['Approve'] })
+    expect(r.files).toHaveLength(1)
+    expect(r.files[0].file).toContain('ApproveCustomerCommandHandler.cls')
+    expect(r.warnings.map(w => w.missing)).toContain('command')
+  })
+
+  it('full stack with facade is consistent', () => {
+    const r = scaffoldEntity(spec, {
+      include: ['contract', 'business-entity', 'command-result', ...kinds, 'service'],
+      variants: { service: 'cqrs' },
+    })
+    expect(r.warnings).toEqual([])
+    const svc = r.files.find(f => f.file.endsWith('CustomerService.cls'))!.content
+    for (const f of r.files.filter(x => /\/(command|query)\//.test(x.file) && /Handler\.cls$/.test(x.file))) {
+      const cls = /^class ([\w.]+):/m.exec(f.content)![1]
+      expect(svc, cls).toContain(cls)
+    }
+  })
+
+  it('directory below the root equals the package for every part', () => {
+    const r = scaffoldEntity(spec, { include: [...kinds, 'service'] })
+    for (const f of r.files) {
+      const pkg = /^class ([\w.]+)\.\w+:/m.exec(f.content)![1]
+      expect(f.file.replace(/^out\/src\//, '').split('/').slice(0, -1).join('.'), f.file).toBe(pkg)
+    }
+  })
+})
+
+describe('command-result', () => {
+  it('is one class per entity in command/result', () => {
+    const r = generateComponent('command-result', spec)
+    expect(r.file).toBe('out/src/com/acme/Customer/command/result/CustomerCommandResult.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.result.CustomerCommandResult:')
+    expect(r.content).toContain('define public property Success as logical')
+    expect(r.content).toContain('method public void collecterrors(input i-dataset-h as handle)')
+    expect(r.content).not.toMatch(/\{\{/)
+  })
+
+  it('needs no operation and can be generated alone', () => {
+    expect(() => generateComponent('command-result', spec)).not.toThrow()
+  })
+
+  it('handlers warn when it is missing', () => {
+    const r = scaffoldEntity(spec, { include: ['command-handler'], commands: ['Create'] })
+    expect(r.warnings.map(w => w.missing)).toContain('command-result')
+  })
+})
+
+describe('command handler bodies', () => {
+  const keyed = {
+    ...spec,
+    fields: [
+      { name: 'CustNum', dataType: 'INTEGER', key: true },
+      { name: 'Name', dataType: 'CHARACTER' },
+    ],
+  }
+  const h = (operation: unknown) => generateComponent('command-handler', { ...keyed, operation } as never).content
+
+  it('create: builds a row from the command, calls updatedata, fills the result', () => {
+    const c = h('Create')
+    expect(c).toContain('{ com/acme/Customer/contract/customer-contract.i }')
+    expect(c).toContain('l-customer-tt.CustNum = i-command-o:CustNum.')
+    expect(c).toContain('l-customer-tt.Name = i-command-o:Name.')
+    expect(c).toContain('l-be-o:updatedata(input dataset l-customer-ds)')
+    expect(c).toContain('l-result-o:collecterrors(dataset l-customer-ds:handle)')
+    expect(c).toContain('as com.acme.Customer.command.result.CustomerCommandResult')
+  })
+
+  it('update: key first (unchanged), then the changed values', () => {
+    const c = h('Update')
+    expect(c.indexOf('l-customer-tt.CustNum')).toBeLessThan(c.indexOf('accept-changes'))
+    expect(c.indexOf('accept-changes')).toBeLessThan(c.indexOf('l-customer-tt.Name'))
+    expect(c).toContain('l-be-o:updatedata')
+  })
+
+  it('delete: deletes the row and calls deletedata', () => {
+    const c = h('Delete')
+    expect(c).toContain('delete l-customer-tt.')
+    expect(c).toContain('l-be-o:deletedata(input dataset l-customer-ds)')
+    expect(c).not.toContain('l-customer-tt.Name')
+  })
+
+  it('custom without task: plain stub, no task reference', () => {
+    const c = h('Approve')
+    expect(c).not.toMatch(/task/i)
+    expect(c).toContain('return l-result-o.')
+  })
+
+  it('custom with task: delegates to the task in Customer/task', () => {
+    const c = h({ name: 'Approve', task: 'approve-customer', fields: ['CustNum'] })
+    expect(c).toContain('define variable l-task-o as com.acme.Customer.task.ApproveCustomer no-undo.')
+    expect(c).toContain('l-task-o:execute(input dataset l-input-ds, output dataset l-output-ds)')
+    expect(c).toContain('field CustNum as INTEGER')
+  })
+
+  it('never requires a task: commands and tasks generate independently', () => {
+    expect(() => generateComponent('command', { ...keyed, operation: { name: 'Approve', task: 'X' } })).not.toThrow()
+    const t = scaffoldEntity(keyed, { include: ['command', 'command-handler', 'command-result'], commands: [{ name: 'Approve', task: 'X' }] })
+    expect(t.warnings.map(w => w.missing)).not.toContain('task')
+    expect(() => generateComponent('task', { ...keyed, inputFields: [], outputFields: [] })).not.toThrow()
+  })
+})
+
+describe('query side', () => {
+  const keyed = {
+    ...spec,
+    fields: [
+      { name: 'Region', dataType: 'CHARACTER', key: true },
+      { name: 'CustNum', dataType: 'INTEGER', key: true },
+      { name: 'Name', dataType: 'CHARACTER' },
+    ],
+  }
+  const h = (operation: unknown) => generateComponent('query-handler', { ...keyed, operation } as never).content
+
+  it('GetById builds a filter from the key fields, quoting character values only', () => {
+    const c = h('GetById')
+    expect(c).toContain('"Region = " + quoter(string(i-query-o:Region))')
+    expect(c).toContain('"CustNum = " + string(i-query-o:CustNum)')
+    expect(c).not.toContain('i-query-o:Name')
+    expect(c).toContain('l-request-o:setfilter(l-filter-c)')
+    expect(c).toContain('return l-be-o:getdata(l-request-o)')
+  })
+
+  it('List has no criteria, only paging properties on the query', () => {
+    expect(h('List')).not.toContain('i-query-o:')
+    const q = generateComponent('query', { ...keyed, operation: 'List' }).content
+    expect(q).toContain('property Skip')
+    expect(q).toContain('property Top')
+  })
+
+  it('custom queries filter on the listed fields', () => {
+    const c = h({ name: 'FindByName', fields: ['Name'] })
+    expect(c).toContain('"Name = " + quoter(string(i-query-o:Name))')
+  })
+
+  it('GetById query has no paging', () => {
+    expect(generateComponent('query', { ...keyed, operation: 'GetById' }).content).not.toContain('Skip')
+  })
+})
+
+describe('command handler tests', () => {
+  const t = (operation: unknown) =>
+    generateComponent('command-handler-test', { ...spec, operation } as never)
+
+  it('lives in the test tree and mirrors the handler folder', () => {
+    const r = t('Create')
+    expect(r.file).toBe('out/test/com/acme/Customer/command/handler/CreateCustomerCommandHandlerTest.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.handler.CreateCustomerCommandHandlerTest:')
+  })
+
+  it('tests the handler through its result', () => {
+    const c = t('Create').content
+    expect(c).toContain('define variable l-handler-o as com.acme.Customer.command.handler.CreateCustomerCommandHandler no-undo.')
+    expect(c).toContain('l-result-o = l-handler-o:execute(l-command-o).')
+    expect(c).toContain('assert:istrue(l-result-o:success).')
+    expect(c).toContain('@Ignore.')
+    expect(c).toContain('/* todo: l-command-o:CustNum = <INTEGER test value>. */')
+    expect(c).not.toMatch(/\{\{/)
+  })
+
+  it('delete asserts on removal; works for custom commands', () => {
+    expect(t('Delete').content).toContain('no longer exists')
+    expect(t('Approve').content).toContain('ApproveCustomerCommandHandler')
+  })
+
+  it('warns when the handler or command is missing, and is generated per operation', () => {
+    const r = scaffoldEntity(spec, { include: ['command-handler-test'], commands: ['Create', 'Delete'] })
+    expect(r.files).toHaveLength(2)
+    expect(r.warnings.map(w => w.missing)).toEqual(expect.arrayContaining(['command-handler', 'command']))
+  })
+})

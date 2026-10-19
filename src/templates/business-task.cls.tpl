@@ -1,6 +1,6 @@
 @openapi.openedge.export file (type="rest", executionmode="singleton").
 {{#if description}}/* {{description}} */{{/if}}
-class {{package}}.tasks.{{name}}:
+class {{package}}.{{className}}:
 
   /*
    * input: dataset with fields provided by the caller.
