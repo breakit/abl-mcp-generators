@@ -1,81 +1,67 @@
 import { describe, it, expect } from 'vitest'
 import { generateTest, scaffoldTest } from './test.js'
 
-describe('generateTest', () => {
-  const spec = {
-    package: 'com.test',
-    name: 'Customer',
-    entityName: 'CustomerEntity',
-    tableName: 'CUSTOMER',
-    fields: [
-      { name: 'CustNum', dataType: 'INTEGER' },
-      { name: 'Name', dataType: 'CHARACTER' },
-    ],
-    outputDir: './output',
-  }
+const spec = {
+  package: 'com.test',
+  name: 'Customer',
+  entityName: 'CustomerEntity',
+  tableName: 'CUSTOMER',
+  fields: [
+    { name: 'CustNum', dataType: 'INTEGER' },
+    { name: 'Name', dataType: 'CHARACTER' },
+  ],
+  outputDir: './output',
+}
 
+const methods = [
+  {
+    methodName: 'getById',
+    visibility: 'public',
+    returnType: 'character',
+    hasParams: true,
+    hasReturnType: true,
+    params: [{ paramName: 'id', direction: 'input', dataType: 'integer' }],
+  },
+  {
+    methodName: 'reset',
+    visibility: 'public',
+    returnType: 'void',
+    hasParams: false,
+    hasReturnType: false,
+    params: [],
+  },
+]
+
+describe('generateTest', () => {
   it('generates test class', () => {
     const result = generateTest(spec)
-    expect(result).toContain('class com.test.Customertest')
-    expect(result).toContain('inherits openedge.ablunit.testcase')
+    expect(result).toContain('class com.test.CustomerTest inherits openedge.ablunit.testcase')
+    expect(result).toContain('define variable h-entity-o as CustomerEntity no-undo.')
   })
 
-  it('includes shared data contract', () => {
+  it('has lifecycle methods', () => {
     const result = generateTest(spec)
-    expect(result).toContain('{ customer-entity-contract.i }')
+    expect(result).toContain('@BeforeAll.')
+    expect(result).toContain('method public void beforeAll()')
+    expect(result).toContain('@AfterAll.')
+    expect(result).toContain('@Setup.')
+    expect(result).toContain('method public void setup()')
+    expect(result).toContain('new CustomerEntity()')
   })
 
-  it('has setup method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('@setup.')
-    expect(result).toContain('method public void setup')
-    expect(result).toContain('l-service-o = new CustomerEntityservice()')
-  })
-
-  it('generates testCreate method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('@test.')
-    expect(result).toContain('method public void testcreate')
-    expect(result).toContain('create l-customer-entity-tt')
-    expect(result).toContain('l-service-o:create')
-  })
-
-  it('generates testList method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('method public void testlist')
-    expect(result).toContain('l-service-o:listall()')
-  })
-
-  it('generates testUpdate method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('method public void testupdate')
-    expect(result).toContain('l-service-o:update')
-  })
-
-  it('generates testDelete method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('method public void testdelete')
-    expect(result).toContain('l-service-o:delete')
-  })
-
-  it('has teardown method', () => {
-    const result = generateTest(spec)
-    expect(result).toContain('@teardown.')
-    expect(result).toContain('method public void teardown')
+  it('generates one test per method', () => {
+    const result = generateTest({ ...spec, methods })
+    expect(result).toContain('method public void testgetById()')
+    expect(result).toContain('method public void testreset()')
+    expect(result).toContain('h-result = h-entity-o:getById(input h-id-var).')
+    expect(result).toContain('h-entity-o:reset().')
   })
 })
 
 describe('scaffoldTest', () => {
   it('produces a scaffold result', () => {
-    const result = scaffoldTest({
-      package: 'com.test',
-      name: 'Customer',
-      entityName: 'CustomerEntity',
-      tableName: 'CUSTOMER',
-      fields: [{ name: 'CustNum', dataType: 'INTEGER' }],
-      outputDir: './output',
-    })
-    expect(result.file).toContain('cls/test/CustomerTest.cls')
-    expect(result.content).toContain('class com.test.Customertest')
+    const result = scaffoldTest(spec)
+    expect(result.file).toBe('./output/tests/Customer/Customer-test.cls')
+    expect(result.content).toContain('class com.test.CustomerTest')
   })
 })
