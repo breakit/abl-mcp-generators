@@ -54,9 +54,9 @@ RETURN.
       path: `${spec.outputDir}/src/${pkg}/def/global-defs.i`,
       content: `/* Global definitions for ${spec.package} */
 
-DEFINE VARIABLE gcUserID   AS CHARACTER NO-UNDO.
-DEFINE VARIABLE gcLanguage AS CHARACTER NO-UNDO INITIAL "de".
-DEFINE VARIABLE glDebug    AS LOGICAL   NO-UNDO INITIAL FALSE.
+define variable g-user-id-c  as character no-undo.
+define variable g-language-c as character no-undo initial "de".
+define variable g-debug-l    as logical   no-undo initial false.
 `,
     },
     {
