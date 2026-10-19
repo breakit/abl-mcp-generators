@@ -176,6 +176,14 @@ scaffoldEntity(spec, {
 })
 ```
 
+Legacy backend (stub): one monolithic class with public variables for the WebSpeed page and JSON CRUD methods. It lives in the caller's old-style domain package, outside the entity folder, and is self-contained. Package and file path are configurable per call:
+
+```ts
+generateComponent('legacy-backend', { package: 'sagedpw.employee', name: 'EmployeeManager', fields })
+// -> src/sagedpw/employee/EmployeeManager.cls
+generateComponent('legacy-backend', spec, { naming: { backendFile: s => `legacy/${s.name}.cls` } })
+```
+
 Contract includes resolve against the source root: `com/acme/Customer/contract/customer-contract.i`. See CHANGELOG.md for migration notes.
 
 ## Templates
@@ -185,6 +193,7 @@ src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LS
 ├── business-entity.cls.tpl  # BE with REST annotations + ProDataSet
 ├── service.cls.tpl          # Service with REST annotations
 ├── cqrs/                    # command, command-handler, query, query-handler, service facade
+├── legacy/backend.cls.tpl   # monolithic legacy backend class (stub)
 ├── controller/
 │   ├── rest/controller.cls.tpl  # WebHandler-based REST controller
 │   └── soap/controller.cls.tpl  # SOAP controller (dataset in/out)

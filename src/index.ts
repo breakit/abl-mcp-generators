@@ -20,6 +20,7 @@ export type {
   ComponentKind,
   ComponentSpec,
   ComponentDefinition,
+  LegacyNamingStrategy,
   GenerateOptions,
   ScaffoldEntityOptions,
   ScaffoldEntityResult,

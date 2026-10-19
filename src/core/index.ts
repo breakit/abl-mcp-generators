@@ -1,10 +1,12 @@
 import './components.js'
 import './cqrs.js'
+import './legacy.js'
 
 export * from './types.js'
 export { entityFolder, entityName, applyConfig, packagePath, derivePackage, resolveLocation, SOURCE_ROOT, TEST_ROOT } from './layout.js'
 export { registerComponent, getComponent, listComponents, resolveVariant } from './registry.js'
 export { DEFAULT_COMMANDS, DEFAULT_QUERIES, cqrsClassName, cqrsFqn } from './cqrs.js'
+export { defaultLegacyNaming, resolveLegacyNaming } from './legacy.js'
 export { renderComponent, packageOf } from './render.js'
 export { generateComponent, scaffoldEntity, DEFAULT_ENTITY_KINDS } from './api.js'
 export type { ScaffoldEntityOptions, ScaffoldEntityResult, ScaffoldWarning } from './api.js'

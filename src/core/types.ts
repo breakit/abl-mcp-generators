@@ -14,6 +14,7 @@ export type ComponentKind =
   | 'command-handler'
   | 'query'
   | 'query-handler'
+  | 'legacy-backend'
 
 /** Minimal input every component needs. Component-specific fields are passed through to templates. */
 export interface ComponentSpec {
@@ -37,6 +38,16 @@ export interface GenerateOptions {
   config?: ProjectConfig
   /** Sub-kind, e.g. the API standard of a controller (`rest`, `soap`, ...). */
   variant?: string
+  /** Per-call naming for legacy components (partial override of the defaults). */
+  naming?: Partial<LegacyNamingStrategy>
+}
+
+/** Naming/placement rules of legacy components. Paths are relative to the output dir. */
+export interface LegacyNamingStrategy {
+  /** Package of the legacy backend class (old domain package, e.g. `sagedpw.employee`). */
+  packageOf(spec: ComponentSpec): string
+  /** Relative file path of the backend `.cls`. */
+  backendFile(spec: ComponentSpec): string
 }
 
 /** Where a component lives, resolved by the layout. */
@@ -64,6 +75,8 @@ export interface ComponentDefinition {
   context?: (spec: ComponentSpec, loc: ResolvedLocation) => Record<string, unknown>
   /** Kinds this component references by name (reported, never generated implicitly). */
   dependsOn?: ComponentKind[]
+  /** Custom placement (bypasses the entity folder layout), e.g. for legacy components. */
+  locate?: (spec: ComponentSpec, naming: Partial<LegacyNamingStrategy> | undefined) => ResolvedLocation
   /** Place in the test tree instead of the source tree. */
   tree?: 'src' | 'test'
 }

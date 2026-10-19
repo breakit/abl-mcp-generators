@@ -15,7 +15,7 @@ export function renderComponent(
   const spec = applyConfig(rawSpec, options.config)
   const def = getComponent(kind)
   const variant = resolveVariant(def, options.variant)
-  const loc = resolveLocation(def, spec, variant)
+  const loc = def.locate ? def.locate(spec, options.naming) : resolveLocation(def, spec, variant)
 
   const entity = entityName(spec)
   const className = loc.file.split('/').pop()!.replace(/\.[^.]+$/, '')

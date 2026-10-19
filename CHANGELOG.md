@@ -8,6 +8,7 @@
 - `abl.toml` now carries `source_root` / `test_root`; `loadProjectConfig` / `parseProjectConfig` read them (plus `[project] package`) and `config` can be passed to `generateComponent` / `scaffoldEntity`.
 - CQRS components `command`, `command-handler`, `query`, `query-handler` (per operation, via `spec.operation`), placed in `command/{command,handler}` and `query/{query,handler}`. `scaffoldEntity` takes `commands` / `queries` (defaults: Create, Update, Delete / GetById, List).
 - `service` variant `cqrs`: a facade that only dispatches to the generated handlers (default variant unchanged).
+- `legacy-backend` component (stub) with a per-call `naming` strategy (`packageOf`, `backendFile`; partial overrides, defaults mirror the caller's package).
 - `toPascal` helper.
 - Templates are stored as `*.tpl` so ABL tooling does not parse placeholder syntax.
 

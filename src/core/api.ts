@@ -2,7 +2,7 @@ import { renderComponent } from './render.js'
 import { getComponent, listComponents } from './registry.js'
 import { DEFAULT_COMMANDS, DEFAULT_QUERIES } from './cqrs.js'
 import type { ProjectConfig } from '../project-config.js'
-import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
+import type { LegacyNamingStrategy, ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
 
 /** Generate exactly one part of a business entity. */
 export function generateComponent(
@@ -26,6 +26,8 @@ export interface ScaffoldEntityOptions {
   queries?: string[]
   /** Settings from abl.toml (see loadProjectConfig). */
   config?: ProjectConfig
+  /** Per-call naming for legacy components. */
+  naming?: Partial<LegacyNamingStrategy>
 }
 
 export interface ScaffoldWarning {
@@ -66,7 +68,7 @@ export function scaffoldEntity(spec: ComponentSpec, options: ScaffoldEntityOptio
   const payload = (op: string) => (/^(create|update)$/i.test(op) ? entityFields : entityFields.slice(0, 1))
 
   for (const kind of kinds) {
-    const opts = { variant: options.variants?.[kind], config: options.config }
+    const opts = { variant: options.variants?.[kind], config: options.config, naming: options.naming }
     const ops = kind.startsWith('command') ? commands : kind.startsWith('query') ? queries : undefined
     if (ops) {
       for (const op of ops) {
