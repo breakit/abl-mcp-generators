@@ -16,7 +16,7 @@
     "src/templates"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/templates dist/",
+    "build": "tsc && node scripts/copy-templates.mjs",
     "test": "vitest run"
   },
   "devDependencies": {
