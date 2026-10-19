@@ -188,6 +188,20 @@ generateComponent('legacy-page', { name: 'employee', backendClass: 'sagedpw.empl
 // -> employee.htm   (override with naming.pageFile)
 ```
 
+Whole project in one call:
+
+```ts
+scaffoldProject({
+  name: 'demo', package: 'com.acme', outputDir: 'out',
+  entities: [{ name: 'Customer', tableName: 'CUSTOMER', fields,
+    include: ['contract', 'business-entity', 'command', 'command-handler', 'command-result', 'service'],
+    commands: ['Create', { name: 'Approve', task: 'ApproveCustomer' }], variants: { service: 'cqrs' } }],
+})
+```
+
+Use cases: `scaffoldCommand(spec, 'Create')` generates command + handler + handler test; `scaffoldQuery` generates query + handler.
+Operations are names or `{ name, kind, fields, task }`; mark key fields with `key: true`. A `task` is optional and only generated when requested.
+
 Contract includes resolve against the source root: `com/acme/Customer/contract/customer-contract.i`. See CHANGELOG.md for migration notes.
 
 ## Templates
