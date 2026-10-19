@@ -24,37 +24,37 @@ describe('registry', () => {
 
 describe('layout', () => {
   it('places every component in its own folder under the entity folder', () => {
-    expect(renderComponent('business-entity', spec).file).toBe('out/src/order-item/business/OrderItem.cls')
-    expect(renderComponent('contract', spec).file).toBe('out/src/order-item/contract/order-item-contract.i')
-    expect(renderComponent('service', spec).file).toBe('out/src/order-item/service/OrderItemService.cls')
+    expect(renderComponent('business-entity', spec).file).toBe('out/src/com/acme/OrderItem/business/OrderItem.cls')
+    expect(renderComponent('contract', spec).file).toBe('out/src/com/acme/OrderItem/contract/order-item-contract.i')
+    expect(renderComponent('service', spec).file).toBe('out/src/com/acme/OrderItem/service/OrderItemService.cls')
   })
 
   it('places controllers by API standard', () => {
-    expect(renderComponent('controller', spec).file).toBe('out/src/order-item/controller/rest/OrderItemController.cls')
+    expect(renderComponent('controller', spec).file).toBe('out/src/com/acme/OrderItem/controller/rest/OrderItemController.cls')
     expect(renderComponent('controller', spec, { variant: 'soap' }).file).toBe(
-      'out/src/order-item/controller/soap/OrderItemController.cls',
+      'out/src/com/acme/OrderItem/controller/soap/OrderItemController.cls',
     )
   })
 
   it('places tests in the separate test tree', () => {
-    expect(renderComponent('test', spec).file).toBe('out/test/order-item/OrderItemTest.cls')
+    expect(renderComponent('test', spec).file).toBe('out/test/com/acme/OrderItem/OrderItemTest.cls')
   })
 
   it('omits the output dir prefix when not given', () => {
     expect(renderComponent('task', { ...spec, outputDir: undefined, inputFields: [], outputFields: [] }).file).toBe(
-      'src/order-item/task/OrderItem.cls',
+      'src/com/acme/OrderItem/task/OrderItem.cls',
     )
   })
 
   it('derives packages from folders', () => {
-    expect(packageOf('business-entity', spec)).toBe('com.acme.order-item.business')
-    expect(packageOf('controller', spec, 'soap')).toBe('com.acme.order-item.controller.soap')
+    expect(packageOf('business-entity', spec)).toBe('com.acme.OrderItem.business')
+    expect(packageOf('controller', spec, 'soap')).toBe('com.acme.OrderItem.controller.soap')
   })
 })
 
 describe('render pipeline', () => {
   it('uses the derived package in the template', () => {
-    expect(renderComponent('business-entity', spec).content).toContain('com.acme.order-item.business.OrderItem')
+    expect(renderComponent('business-entity', spec).content).toContain('com.acme.OrderItem.business.OrderItem')
   })
 
   it('renders each component without touching the others', () => {
@@ -68,7 +68,7 @@ describe('render pipeline', () => {
       initialStatus: 'new',
       steps: [{ name: 'approve' }, { name: 'ship' }],
     })
-    expect(r.file).toBe('out/src/order-item/workflow/OrderItem.cls')
+    expect(r.file).toBe('out/src/com/acme/OrderItem/workflow/OrderItem.cls')
     expect(r.content).toContain('approve')
   })
 })

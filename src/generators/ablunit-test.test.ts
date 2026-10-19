@@ -35,8 +35,8 @@ const methods = [
 describe('generateTest', () => {
   it('generates test class', () => {
     const result = generateTest(spec)
-    expect(result).toContain('class com.test.customer-entity.CustomerTest inherits openedge.ablunit.testcase')
-    expect(result).toContain('define variable h-entity-o as com.test.customer-entity.business.CustomerEntity no-undo.')
+    expect(result).toContain('class com.test.CustomerEntity.CustomerTest inherits openedge.ablunit.testcase')
+    expect(result).toContain('define variable h-entity-o as com.test.CustomerEntity.business.CustomerEntity no-undo.')
   })
 
   it('has lifecycle methods', () => {
@@ -46,7 +46,7 @@ describe('generateTest', () => {
     expect(result).toContain('@AfterAll.')
     expect(result).toContain('@Setup.')
     expect(result).toContain('method public void setup()')
-    expect(result).toContain('new com.test.customer-entity.business.CustomerEntity()')
+    expect(result).toContain('new com.test.CustomerEntity.business.CustomerEntity()')
   })
 
   it('generates one test per method', () => {
@@ -61,7 +61,7 @@ describe('generateTest', () => {
 describe('scaffoldTest', () => {
   it('produces a scaffold result', () => {
     const result = scaffoldTest(spec)
-    expect(result.file).toBe('./output/test/customer-entity/CustomerTest.cls')
-    expect(result.content).toContain('class com.test.customer-entity.CustomerTest')
+    expect(result.file).toBe('./output/test/com/test/CustomerEntity/CustomerTest.cls')
+    expect(result.content).toContain('class com.test.CustomerEntity.CustomerTest')
   })
 })

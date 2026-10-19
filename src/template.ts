@@ -97,6 +97,15 @@ export function loadAndRender(name: string, context: Record<string, unknown>): s
   return renderTemplate(template, context)
 }
 
+/** `order-item` / `orderItem` / `order_item` -> `OrderItem`. Existing inner casing is kept. */
+export function toPascal(name: string): string {
+  return name
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map(w => w[0].toUpperCase() + w.slice(1))
+    .join('')
+}
+
 export function toKebab(name: string): string {
   return name
     .replace(/([a-z])([A-Z])/g, '$1-$2')

@@ -1,4 +1,5 @@
-import { entityFolder } from './layout.js'
+import { entityName } from './layout.js'
+import { toKebab } from '../template.js'
 import { registerComponent } from './registry.js'
 import type { ComponentSpec } from './types.js'
 
@@ -16,7 +17,7 @@ registerComponent({
   kind: 'contract',
   template: () => 'entity-contract.i',
   segments: () => ['contract'],
-  fileName: spec => `${entityFolder(spec)}-contract.i`,
+  fileName: spec => `${toKebab(entityName(spec))}-contract.i`,
 })
 
 registerComponent({

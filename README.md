@@ -124,11 +124,13 @@ define dataset l-customer-ds for l-customer-tt.
 One folder per business entity; every part lives in its own sub-folder and its class package mirrors that folder:
 
 ```
-<out>/src/<entity-kebab>/
+<out>/<source_root>/<package path>/<Entity>/
   business/   contract/   service/   workflow/   task/
   controller/<api>/            (rest by default)
-<out>/test/<entity-kebab>/     (tests, separate tree)
+<out>/<test_root>/<package path>/<Entity>/   (tests, separate tree)
 ```
+
+`<Entity>` is PascalCase (`order-item` -> `OrderItem`), so folders and packages contain no hyphens, and the directory below the root always equals the class package.
 
 ```ts
 import { generateComponent, scaffoldEntity } from '@breakit/abl-mcp-generators'
@@ -141,7 +143,26 @@ scaffoldEntity(spec, { include: ['business-entity', 'contract'] })
 scaffoldEntity(spec, { variants: { controller: 'soap' } })
 ```
 
-Propath root is `<out>/src`, so contract includes resolve as `<entity>/contract/<entity>-contract.i`. See CHANGELOG.md for migration notes.
+The roots are pre-defined in `abl.toml` (written by `scaffoldProject`) and reused by the generators:
+
+```toml
+[project]
+package = "com.acme"
+
+[paths]
+source_root = "src"
+test_root = "test"
+```
+
+```ts
+import { loadProjectConfig, scaffoldEntity } from '@breakit/abl-mcp-generators'
+
+const config = loadProjectConfig('path/to/project')   // abl.toml or its directory
+scaffoldEntity({ name: 'Customer', tableName: 'CUSTOMER', fields }, { config })
+// -> src/com/acme/Customer/...   (explicit spec.package / sourceRoot / testRoot win over the config)
+```
+
+Contract includes resolve against the source root: `com/acme/Customer/contract/customer-contract.i`. See CHANGELOG.md for migration notes.
 
 ## Templates
 

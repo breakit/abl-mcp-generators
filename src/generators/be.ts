@@ -23,12 +23,12 @@ export function generateEntityContract(spec: { entityName: string; tableName: st
 
 /** @deprecated use generateComponent('service', ...) */
 export function generateService(spec: ServiceSpec): string {
-  return renderComponent('service', { package: spec.package, name: spec.entityName }).content
+  return renderComponent('service', { package: spec.package, name: spec.name, entity: spec.entityName }).content
 }
 
 /** @deprecated use generateComponent('controller', ...) */
 export function generateController(spec: ControllerSpec): string {
-  return renderComponent('controller', { package: spec.package, name: spec.entityName }).content
+  return renderComponent('controller', { package: spec.package, name: spec.name, entity: spec.entityName }).content
 }
 
 /** @deprecated use scaffoldEntity */

@@ -1,4 +1,5 @@
 import type { ScaffoldResult } from '../contracts/index.js'
+import type { ProjectConfig } from '../project-config.js'
 
 /** Every part of a business entity that can be generated on its own. */
 export type ComponentKind =
@@ -16,8 +17,12 @@ export type ComponentKind =
 
 /** Minimal input every component needs. Component-specific fields are passed through to templates. */
 export interface ComponentSpec {
-  /** Base package (e.g. `com.acme`). The component package is derived from it and the layout. */
-  package: string
+  /** Base package (e.g. `com.acme`). Falls back to the project config (abl.toml). */
+  package?: string
+  /** Source root below the output dir. Falls back to the project config, then `src`. */
+  sourceRoot?: string
+  /** Test root below the output dir. Falls back to the project config, then `test`. */
+  testRoot?: string
   /** Class/artifact name. For entity-level parts this is the entity name (e.g. `Customer`). */
   name: string
   /** Owning business entity when `name` is a part of an entity (e.g. workflow `OrderApproval` of `Order`). Defaults to `name`. */
@@ -28,6 +33,8 @@ export interface ComponentSpec {
 }
 
 export interface GenerateOptions {
+  /** Settings from abl.toml (see loadProjectConfig). Explicit spec values win. */
+  config?: ProjectConfig
   /** Sub-kind, e.g. the API standard of a controller (`rest`, `soap`, ...). */
   variant?: string
 }

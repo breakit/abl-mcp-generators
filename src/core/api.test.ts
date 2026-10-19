@@ -12,8 +12,8 @@ const spec = {
 describe('generateComponent', () => {
   it('generates a single part', () => {
     const r = generateComponent('service', spec)
-    expect(r.file).toBe('out/src/customer/service/CustomerService.cls')
-    expect(r.content).toContain('class com.acme.customer.service.CustomerService')
+    expect(r.file).toBe('out/src/com/acme/Customer/service/CustomerService.cls')
+    expect(r.content).toContain('class com.acme.Customer.service.CustomerService')
   })
 
   it('does not require other parts', () => {
@@ -25,10 +25,10 @@ describe('scaffoldEntity', () => {
   it('generates the default set', () => {
     const r = scaffoldEntity(spec)
     expect(r.files.map(f => f.file)).toEqual([
-      'out/src/customer/contract/customer-contract.i',
-      'out/src/customer/business/Customer.cls',
-      'out/src/customer/service/CustomerService.cls',
-      'out/src/customer/controller/rest/CustomerController.cls',
+      'out/src/com/acme/Customer/contract/customer-contract.i',
+      'out/src/com/acme/Customer/business/Customer.cls',
+      'out/src/com/acme/Customer/service/CustomerService.cls',
+      'out/src/com/acme/Customer/controller/rest/CustomerController.cls',
     ])
     expect(r.warnings).toEqual([])
     expect(DEFAULT_ENTITY_KINDS).toHaveLength(4)
@@ -49,7 +49,7 @@ describe('scaffoldEntity', () => {
     const r = scaffoldEntity(spec, { exclude: ['controller', 'service'] })
     expect(r.files).toHaveLength(2)
     const s = scaffoldEntity(spec, { include: ['controller'], variants: { controller: 'legacy' } })
-    expect(s.files[0].file).toBe('out/src/customer/controller/legacy/CustomerController.cls')
+    expect(s.files[0].file).toBe('out/src/com/acme/Customer/controller/legacy/CustomerController.cls')
   })
 
   it('rejects unknown kinds', () => {
@@ -62,9 +62,9 @@ describe('cross-component references', () => {
   const by = (s: string) => r.find(f => f.file.includes(s))!.content
 
   it('references parts by fully qualified name and include path', () => {
-    expect(by('/service/')).toContain('as com.acme.order-item.business.OrderItem no-undo')
-    expect(by('/service/')).toContain('{ order-item/contract/order-item-contract.i }')
-    expect(by('/controller/rest/')).toContain('new com.acme.order-item.service.OrderItemService()')
+    expect(by('/service/')).toContain('as com.acme.OrderItem.business.OrderItem no-undo')
+    expect(by('/service/')).toContain('{ com/acme/OrderItem/contract/order-item-contract.i }')
+    expect(by('/controller/rest/')).toContain('new com.acme.OrderItem.service.OrderItemService()')
   })
 
   it('leaves no unresolved placeholders', () => {
@@ -72,7 +72,7 @@ describe('cross-component references', () => {
   })
 
   it('names classes in the same case as their files', () => {
-    expect(by('/service/')).toContain('class com.acme.order-item.service.OrderItemService:')
+    expect(by('/service/')).toContain('class com.acme.OrderItem.service.OrderItemService:')
     expect(by('/controller/rest/')).toContain('constructor public OrderItemController()')
   })
 })

@@ -1,5 +1,5 @@
 import { loadAndRender, toKebab } from '../template.js'
-import { resolveLocation, derivePackage, entityFolder, entityName } from './layout.js'
+import { resolveLocation, derivePackage, entityFolder, entityName, packagePath, applyConfig } from './layout.js'
 import { getComponent } from './registry.js'
 import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
 
@@ -9,9 +9,10 @@ import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } fr
  */
 export function renderComponent(
   kind: ComponentKind,
-  spec: ComponentSpec,
+  rawSpec: ComponentSpec,
   options: GenerateOptions = {},
 ): ScaffoldResult {
+  const spec = applyConfig(rawSpec, options.config)
   const def = getComponent(kind)
   const loc = resolveLocation(def, spec, options.variant)
 
@@ -27,9 +28,11 @@ export function renderComponent(
     package: loc.package,
     // cross-component references (fully qualified, since each part lives in its own package)
     entityFqn: `${packageOf('business-entity', spec)}.${entity}`,
-    serviceFqn: `${packageOf('service', spec)}.${entity}Service`,
+    serviceFqn: `${packageOf('service', spec)}.${spec.name}Service`,
     // include path relative to the source root (propath entry)
-    contractInclude: `${entityFolder(spec)}/contract/${entityFolder(spec)}-contract.i`,
+    contractInclude: [packagePath(spec), entityFolder(spec), 'contract', `${toKebab(entity)}-contract.i`]
+      .filter(Boolean)
+      .join('/'),
     ...def.context?.(spec, loc),
   }
 

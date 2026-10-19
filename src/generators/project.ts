@@ -17,6 +17,9 @@ package = "${spec.package}"
 type = "abl"
 
 [paths]
+# generator settings: sources are generated below source_root/<package path>/<Entity>/...
+source_root = "src"
+test_root = "test"
 propath = ["src", "incl"]
 schema_dirs = ["schema"]
 

@@ -1,5 +1,6 @@
 import { renderComponent } from './render.js'
 import { getComponent, listComponents } from './registry.js'
+import type { ProjectConfig } from '../project-config.js'
 import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
 
 /** Generate exactly one part of a business entity. */
@@ -18,6 +19,8 @@ export interface ScaffoldEntityOptions {
   exclude?: ComponentKind[]
   /** Variant per kind, e.g. `{ controller: 'soap' }`. */
   variants?: Partial<Record<ComponentKind, string>>
+  /** Settings from abl.toml (see loadProjectConfig). */
+  config?: ProjectConfig
 }
 
 export interface ScaffoldWarning {
@@ -50,7 +53,7 @@ export function scaffoldEntity(spec: ComponentSpec, options: ScaffoldEntityOptio
   const warnings: ScaffoldWarning[] = []
 
   for (const kind of kinds) {
-    files.push(renderComponent(kind, spec, { variant: options.variants?.[kind] }))
+    files.push(renderComponent(kind, spec, { variant: options.variants?.[kind], config: options.config }))
     for (const dep of getComponent(kind).dependsOn ?? []) {
       if (!selected.has(dep)) {
         warnings.push({ kind, missing: dep, message: `${kind} references ${dep}, which is not part of this run` })
