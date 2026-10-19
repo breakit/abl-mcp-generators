@@ -19,6 +19,11 @@ class {{package}}.{{className}}:
 {{#each fields}}    l-filter-c = l-filter-c + (if l-filter-c > "" then " and " else "") + "{{name}} = " + {{#if quoted}}quoter(string(i-query-o:{{name}})){{else}}string(i-query-o:{{name}}){{/if}}.
 {{/each}}    if l-filter-c > "" then l-filter-c = "where " + l-filter-c.
 
+    /*
+     * the request type follows the entity template's convention (igetdatarequest with a filter).
+     * note: OpenEdge.BusinessLogic.GetDataRequest ships with 12.x, not 11.7 — on 11.7 supply your own
+     * request class implementing that interface and adapt the two lines below.
+     */
     l-request-o = new openedge.businesslogic.getdatarequest().
     l-request-o:setfilter(l-filter-c).
     return l-be-o:getdata(l-request-o).

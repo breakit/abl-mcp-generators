@@ -223,6 +223,15 @@ src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LS
 └── security-contract.i      # (static ABL, not a template) Authorization, logging, and metrics patterns
 ```
 
+## OpenEdge 11.7 compatibility
+
+The generated code targets OpenEdge 11.7: no `Ccs.*` interfaces and no 12.x-only classes. There is no compiler in this repo, so the generated ABL has not been compiled. Known points to check on your system:
+
+- `query-handler` builds a request with `openedge.businesslogic.getdatarequest` (the entity template's convention). `OpenEdge.BusinessLogic.GetDataRequest` exists from 12.x; on 11.7 use your own request class.
+- Command handlers use `updatedata`/`deletedata` row-state, so the contract temp-table needs a `before-table` (the current `entity-contract.i` does not define one).
+- Test templates assume the ABLUnit annotations `@Test`, `@Setup`, `@TearDown`, `@Ignore` and `OpenEdge.Core.Assert`; the older `test.cls` template uses `@BeforeAll`/`@AfterAll`, which should be checked against your ABLUnit version.
+- The SOAP controller annotation and the legacy `~{~}` escapes are written from memory.
+
 ## OpenEdge Class Hierarchy
 
 | Template | Inherits From |

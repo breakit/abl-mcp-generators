@@ -26,3 +26,11 @@ describe('template files', () => {
     }
   })
 })
+
+describe('OpenEdge 11.7 guard', () => {
+  it('templates do not reference the Ccs.* interfaces (not available on older 11.x)', () => {
+    for (const f of files.filter(x => x.endsWith(TEMPLATE_EXT))) {
+      expect(readFileSync(join(dir, f), 'utf-8'), f).not.toMatch(/\bCcs\./i)
+    }
+  })
+})
