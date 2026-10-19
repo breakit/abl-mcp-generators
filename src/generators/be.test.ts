@@ -14,13 +14,13 @@ describe('generateBusinessEntity', () => {
 
   it('generates a class with correct inheritance', () => {
     const result = generateBusinessEntity(baseSpec)
-    expect(result).toContain('class com.test.Customer')
+    expect(result).toContain('class com.test.Customer.business.Customer')
     expect(result).toContain('inherits openedge.businesslogic.businessentity')
   })
 
   it('includes shared data contract', () => {
     const result = generateBusinessEntity(baseSpec)
-    expect(result).toContain('{ customer-contract.i }')
+    expect(result).toContain('{ com/test/Customer/contract/customer-contract.i }')
   })
 
   it('generates GetData method with correct loop order', () => {
@@ -64,11 +64,11 @@ describe('generateBusinessEntity', () => {
 describe('generateService', () => {
   it('generates service class with constructor and BE instance', () => {
     const result = generateService({ package: 'com.test', name: 'Customer', entityName: 'CustomerEntity' })
-    expect(result).toContain('class com.test.Customerservice')
-    expect(result).toContain('{ customer-entity-contract.i }')
-    expect(result).toContain('define variable l-be-o as CustomerEntity no-undo')
-    expect(result).toContain('constructor public Customerservice')
-    expect(result).toContain('l-be-o = new CustomerEntity()')
+    expect(result).toContain('class com.test.CustomerEntity.service.CustomerService')
+    expect(result).toContain('{ com/test/CustomerEntity/contract/customer-entity-contract.i }')
+    expect(result).toContain('define variable l-be-o as com.test.CustomerEntity.business.CustomerEntity no-undo')
+    expect(result).toContain('constructor public CustomerService')
+    expect(result).toContain('l-be-o = new com.test.CustomerEntity.business.CustomerEntity()')
   })
 
   it('generates instance methods (not static)', () => {
@@ -92,10 +92,10 @@ describe('generateService', () => {
 describe('generateController', () => {
   it('generates controller with constructor', () => {
     const result = generateController({ package: 'com.test', name: 'Customer', entityName: 'CustomerEntity' })
-    expect(result).toContain('class com.test.Customercontroller')
+    expect(result).toContain('class com.test.CustomerEntity.controller.rest.CustomerController')
     expect(result).toContain('inherits openedge.web.webhandler')
-    expect(result).toContain('constructor public Customercontroller')
-    expect(result).toContain('l-service-o = new CustomerEntityservice()')
+    expect(result).toContain('constructor public CustomerController')
+    expect(result).toContain('l-service-o = new com.test.CustomerEntity.service.CustomerService()')
   })
 
   it('generates handlerequest and endpoint methods', () => {
@@ -118,9 +118,25 @@ describe('scaffoldFullEntity', () => {
       outputDir: './output',
     })
     expect(results).toHaveLength(4)
-    expect(results[0].file).toContain('contracts/customer-contract.i')
-    expect(results[1].file).toContain('business/Customer.cls')
-    expect(results[2].file).toContain('service/CustomerService.cls')
-    expect(results[3].file).toContain('controller/CustomerController.cls')
+    expect(results[0].file).toContain('src/com/test/Customer/contract/customer-contract.i')
+    expect(results[1].file).toContain('src/com/test/Customer/business/Customer.cls')
+    expect(results[2].file).toContain('src/com/test/Customer/service/CustomerService.cls')
+    expect(results[3].file).toContain('src/com/test/Customer/controller/rest/CustomerController.cls')
+  })
+})
+
+describe('wrappers with differing name and entityName', () => {
+  const spec = { package: 'com.test', name: 'Customer', entityName: 'CustomerEntity' }
+
+  it('service: class from name, folder and BE reference from entityName', () => {
+    const r = generateService(spec)
+    expect(r).toContain('class com.test.CustomerEntity.service.CustomerService:')
+    expect(r).toContain('new com.test.CustomerEntity.business.CustomerEntity()')
+  })
+
+  it('controller references the service class of the same name', () => {
+    const r = generateController(spec)
+    expect(r).toContain('class com.test.CustomerEntity.controller.rest.CustomerController')
+    expect(r).toContain('new com.test.CustomerEntity.service.CustomerService()')
   })
 })

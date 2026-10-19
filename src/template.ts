@@ -14,10 +14,8 @@ export function renderTemplate(template: string, context: Record<string, unknown
   // Each loops — expand first so inner conditionals evaluate against item context
   let result = renderEach(template, context)
 
-  // Conditionals
-  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g, (_, key, trueBody, falseBody) => {
-    return context[key] ? trueBody : (falseBody || '')
-  })
+  // Conditionals (nesting-aware)
+  result = renderIf(result, context)
 
   // Values
   result = result.replace(/\{\{(\w+)\}\}/g, (_, key) => {
@@ -26,6 +24,47 @@ export function renderTemplate(template: string, context: Record<string, unknown
   })
 
   return result
+}
+
+function renderIf(template: string, ctx: Record<string, unknown>): string {
+  const tokenRe = /\{\{#if (\w+)\}\}|\{\{else\}\}|\{\{\/if\}\}/g
+  let out = ''
+  let pos = 0
+  let m: RegExpExecArray | null
+
+  while ((m = findNextIf(template, pos))) {
+    const key = m[1]
+    const bodyStart = m.index + m[0].length
+    let depth = 1
+    let elseAt = -1
+    let elseLen = 0
+    let end = -1
+    tokenRe.lastIndex = bodyStart
+    let t: RegExpExecArray | null
+    while ((t = tokenRe.exec(template))) {
+      if (t[0].startsWith('{{#if')) depth++
+      else if (t[0] === '{{/if}}') {
+        depth--
+        if (depth === 0) { end = t.index; break }
+      } else if (depth === 1 && elseAt < 0) {
+        elseAt = t.index
+        elseLen = t[0].length
+      }
+    }
+    if (end < 0) break // unbalanced: leave remainder untouched
+
+    const trueBody = template.slice(bodyStart, elseAt >= 0 ? elseAt : end)
+    const falseBody = elseAt >= 0 ? template.slice(elseAt + elseLen, end) : ''
+    out += template.slice(pos, m.index) + renderIf(ctx[key] ? trueBody : falseBody, ctx)
+    pos = end + '{{/if}}'.length
+  }
+  return out + template.slice(pos)
+}
+
+function findNextIf(template: string, from: number): RegExpExecArray | null {
+  const re = /\{\{#if (\w+)\}\}/g
+  re.lastIndex = from
+  return re.exec(template)
 }
 
 function renderEach(template: string, ctx: Record<string, unknown>): string {
@@ -84,14 +123,26 @@ function renderEach(template: string, ctx: Record<string, unknown>): string {
   return renderEach(template.replace(full, out), ctx)
 }
 
+/** Templates are stored as `<name>.tpl` so ABL tooling (LSP, formatters) does not parse them as ABL. */
+export const TEMPLATE_EXT = '.tpl'
+
 export function loadTemplate(name: string): string {
-  const path = join(TEMPLATES_DIR, name)
-  return readFileSync(path, 'utf-8')
+  const file = name.endsWith(TEMPLATE_EXT) ? name : name + TEMPLATE_EXT
+  return readFileSync(join(TEMPLATES_DIR, file), 'utf-8')
 }
 
 export function loadAndRender(name: string, context: Record<string, unknown>): string {
   const template = loadTemplate(name)
   return renderTemplate(template, context)
+}
+
+/** `order-item` / `orderItem` / `order_item` -> `OrderItem`. Existing inner casing is kept. */
+export function toPascal(name: string): string {
+  return name
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map(w => w[0].toUpperCase() + w.slice(1))
+    .join('')
 }
 
 export function toKebab(name: string): string {

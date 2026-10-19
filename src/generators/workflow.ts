@@ -1,12 +1,11 @@
-import { loadAndRender } from '../template.js'
+import { renderComponent } from '../core/render.js'
+import '../core/components.js'
+import type { ComponentSpec } from '../core/types.js'
 import type { WorkflowStep, WorkflowSpec, ContextField } from '../contracts/index.js'
 
 export type { WorkflowStep, WorkflowSpec, ContextField }
 
+/** @deprecated use generateComponent('workflow', ...) */
 export function generateWorkflow(spec: WorkflowSpec): string {
-  const firstStep = spec.steps.length > 0 ? spec.steps[0].name : 'start'
-  return loadAndRender('business-workflow.cls', {
-    ...spec,
-    firstStep,
-  } as unknown as Record<string, unknown>)
+  return renderComponent('workflow', spec as unknown as ComponentSpec).content
 }

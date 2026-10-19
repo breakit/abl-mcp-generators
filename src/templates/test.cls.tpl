@@ -1,10 +1,10 @@
-class {{package}}.{{name}}Test inherits openedge.ablunit.testcase:
+class {{package}}.{{className}} inherits openedge.ablunit.testcase:
 
-  define variable h-entity-o as {{entityName}} no-undo.
+  define variable h-entity-o as {{entityFqn}} no-undo.
 
   @BeforeAll.
   method public void beforeAll():
-    h-entity-o = new {{entityName}}().
+    h-entity-o = new {{entityFqn}}().
   end method.
 
   @AfterAll.

@@ -1,7 +1,12 @@
+import type { ComponentKind } from '../core/types.js'
+import type { OperationSpec } from '../core/operations.js'
+
 export interface FieldSpec {
   name: string
   dataType: string
   initial?: string
+  /** Part of the entity key (used for delete/get payloads). */
+  key?: boolean
 }
 
 export interface BusinessEntitySpec {
@@ -80,11 +85,26 @@ export interface CcsScaffoldResult {
   files: { file: string; content: string }[]
 }
 
+/** An entity generated together with the project skeleton. */
+export interface ProjectEntitySpec {
+  name: string
+  tableName: string
+  fields: FieldSpec[]
+  /** Parts to generate (default: contract, business-entity, service, controller). */
+  include?: ComponentKind[]
+  commands?: (string | OperationSpec)[]
+  queries?: (string | OperationSpec)[]
+  /** Variant per kind, e.g. `{ controller: 'soap', service: 'cqrs' }`. */
+  variants?: Partial<Record<ComponentKind, string>>
+}
+
 export interface ProjectScaffoldSpec {
   name: string
   package: string
   description?: string
   outputDir: string
+  /** Optional: generate these entities below the roots defined in the project's abl.toml. */
+  entities?: ProjectEntitySpec[]
 }
 
 export interface ProjectFile {

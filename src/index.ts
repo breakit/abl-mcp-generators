@@ -5,4 +5,29 @@ export * from './generators/ccs.js'
 export * from './generators/project.js'
 export * from './generators/test.js'
 export * from './contracts/index.js'
-export { renderTemplate, toKebab } from './template.js'
+export { renderTemplate, toKebab, toPascal } from './template.js'
+export { loadProjectConfig, parseProjectConfig } from './project-config.js'
+export type { ProjectConfig } from './project-config.js'
+export {
+  generateComponent,
+  scaffoldEntity,
+  scaffoldCommand,
+  scaffoldQuery,
+  DEFAULT_ENTITY_KINDS,
+  listComponents,
+  resolveOperation,
+  registerComponent,
+  packageOf,
+} from './core/index.js'
+export type {
+  ComponentKind,
+  OperationSpec,
+  OperationKind,
+  ComponentSpec,
+  ComponentDefinition,
+  LegacyNamingStrategy,
+  GenerateOptions,
+  ScaffoldEntityOptions,
+  ScaffoldEntityResult,
+  ScaffoldWarning,
+} from './core/index.js'

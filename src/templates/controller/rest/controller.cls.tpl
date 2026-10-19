@@ -1,17 +1,17 @@
 @openapi.openedge.export file (type="rest", executionmode="singleton").
-class {{package}}.{{name}}controller
+class {{package}}.{{className}}
   inherits openedge.web.webhandler:
 
   /* controller for {{entityName}} */
 
-  define variable l-service-o as {{entityName}}service no-undo.
+  define variable l-service-o as {{serviceFqn}} no-undo.
 
   /* logging — uncomment:
-   *   define variable l-log-source-c as character no-undo initial "{{name}}controller".
+   *   define variable l-log-source-c as character no-undo initial "{{className}}".
    */
 
-  constructor public {{name}}controller():
-    l-service-o = new {{entityName}}service().
+  constructor public {{className}}():
+    l-service-o = new {{serviceFqn}}().
     /* todo: log request start + record metric:
      *   {&log-info}(l-log-source-c, "controller initialized").
      */

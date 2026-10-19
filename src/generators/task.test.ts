@@ -16,7 +16,7 @@ describe('generateBusinessTask', () => {
 
   it('generates task class', () => {
     const result = generateBusinessTask(baseSpec)
-    expect(result).toContain('class com.test.tasks.ValidateOrder')
+    expect(result).toContain('class com.test.ValidateOrder.task.ValidateOrder')
   })
 
   it('generates input/output temp-tables', () => {
