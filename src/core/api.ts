@@ -1,5 +1,6 @@
 import { renderComponent } from './render.js'
 import { getComponent, listComponents } from './registry.js'
+import { DEFAULT_COMMANDS, DEFAULT_QUERIES } from './cqrs.js'
 import type { ProjectConfig } from '../project-config.js'
 import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
 
@@ -19,6 +20,10 @@ export interface ScaffoldEntityOptions {
   exclude?: ComponentKind[]
   /** Variant per kind, e.g. `{ controller: 'soap' }`. */
   variants?: Partial<Record<ComponentKind, string>>
+  /** Command operations to generate (default: Create, Update, Delete). */
+  commands?: string[]
+  /** Query operations to generate (default: GetById, List). */
+  queries?: string[]
   /** Settings from abl.toml (see loadProjectConfig). */
   config?: ProjectConfig
 }
@@ -52,8 +57,25 @@ export function scaffoldEntity(spec: ComponentSpec, options: ScaffoldEntityOptio
   const files: ScaffoldResult[] = []
   const warnings: ScaffoldWarning[] = []
 
+  const commands = options.commands ?? DEFAULT_COMMANDS
+  const queries = options.queries ?? DEFAULT_QUERIES
+  const base = { ...spec, commands, queries }
+  const entityFields = (spec.fields as { name: string; dataType: string }[] | undefined) ?? []
+
+  /** Default payload per operation: create/update carry the entity fields, others only the key (first field). */
+  const payload = (op: string) => (/^(create|update)$/i.test(op) ? entityFields : entityFields.slice(0, 1))
+
   for (const kind of kinds) {
-    files.push(renderComponent(kind, spec, { variant: options.variants?.[kind], config: options.config }))
+    const opts = { variant: options.variants?.[kind], config: options.config }
+    const ops = kind.startsWith('command') ? commands : kind.startsWith('query') ? queries : undefined
+    if (ops) {
+      for (const op of ops) {
+        const fields = kind.startsWith('query') && /^list$/i.test(op) ? [] : payload(op)
+        files.push(renderComponent(kind, { ...base, operation: op, fields }, opts))
+      }
+    } else {
+      files.push(renderComponent(kind, base, opts))
+    }
     for (const dep of getComponent(kind).dependsOn ?? []) {
       if (!selected.has(dep)) {
         warnings.push({ kind, missing: dep, message: `${kind} references ${dep}, which is not part of this run` })

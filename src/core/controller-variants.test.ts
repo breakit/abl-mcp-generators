@@ -34,7 +34,7 @@ describe('controller variants', () => {
   })
 
   it('rejects variants for components that have none', () => {
-    expect(() => generateComponent('service', spec, { variant: 'x' })).toThrow(/has no variants/)
+    expect(() => generateComponent('contract', spec, { variant: 'x' })).toThrow(/has no variants/)
   })
 
   it('new API standards can be registered with their own template', () => {

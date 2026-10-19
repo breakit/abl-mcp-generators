@@ -127,6 +127,7 @@ One folder per business entity; every part lives in its own sub-folder and its c
 <out>/<source_root>/<package path>/<Entity>/
   business/   contract/   service/   workflow/   task/
   controller/<api>/            (rest by default)
+  command/{command,handler}/   query/{query,handler}/
 <out>/<test_root>/<package path>/<Entity>/   (tests, separate tree)
 ```
 
@@ -162,6 +163,19 @@ scaffoldEntity({ name: 'Customer', tableName: 'CUSTOMER', fields }, { config })
 // -> src/com/acme/Customer/...   (explicit spec.package / sourceRoot / testRoot win over the config)
 ```
 
+CQRS: commands and queries are generated per operation, and every command/query has its own handler class in a separate sub-folder:
+
+```ts
+generateComponent('command', { ...spec, operation: 'Create' })   // command/command/CreateCustomerCommand.cls
+generateComponent('command-handler', { ...spec, operation: 'Create' })
+scaffoldEntity(spec, {
+  include: ['command', 'command-handler', 'query', 'query-handler', 'service'],
+  commands: ['Create', 'Approve'],         // default: Create, Update, Delete
+  queries: ['GetById', 'List'],            // default: GetById, List
+  variants: { service: 'cqrs' },           // facade dispatching to the handlers (default variant talks to the BE directly)
+})
+```
+
 Contract includes resolve against the source root: `com/acme/Customer/contract/customer-contract.i`. See CHANGELOG.md for migration notes.
 
 ## Templates
@@ -170,6 +184,7 @@ Contract includes resolve against the source root: `com/acme/Customer/contract/c
 src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LSP from parsing them
 ├── business-entity.cls.tpl  # BE with REST annotations + ProDataSet
 ├── service.cls.tpl          # Service with REST annotations
+├── cqrs/                    # command, command-handler, query, query-handler, service facade
 ├── controller/
 │   ├── rest/controller.cls.tpl  # WebHandler-based REST controller
 │   └── soap/controller.cls.tpl  # SOAP controller (dataset in/out)

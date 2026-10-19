@@ -6,6 +6,8 @@
 - Component API: `generateComponent(kind, spec, { variant })` generates one part on its own; `scaffoldEntity(spec, { include, exclude, variants })` generates any subset and reports missing references as warnings.
 - Component registry (`registerComponent`, `listComponents`) and a single layout module that decides every output path and package.
 - `abl.toml` now carries `source_root` / `test_root`; `loadProjectConfig` / `parseProjectConfig` read them (plus `[project] package`) and `config` can be passed to `generateComponent` / `scaffoldEntity`.
+- CQRS components `command`, `command-handler`, `query`, `query-handler` (per operation, via `spec.operation`), placed in `command/{command,handler}` and `query/{query,handler}`. `scaffoldEntity` takes `commands` / `queries` (defaults: Create, Update, Delete / GetById, List).
+- `service` variant `cqrs`: a facade that only dispatches to the generated handlers (default variant unchanged).
 - `toPascal` helper.
 - Templates are stored as `*.tpl` so ABL tooling does not parse placeholder syntax.
 

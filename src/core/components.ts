@@ -1,4 +1,5 @@
 import { entityName } from './layout.js'
+import { DEFAULT_COMMANDS, DEFAULT_QUERIES, facadeEntries } from './cqrs.js'
 import { toKebab } from '../template.js'
 import { registerComponent } from './registry.js'
 import type { ComponentSpec } from './types.js'
@@ -22,10 +23,16 @@ registerComponent({
 
 registerComponent({
   kind: 'service',
-  template: () => 'service.cls',
+  // 'default' talks to the business entity directly; 'cqrs' is a facade dispatching to command/query handlers
+  variants: ['default', 'cqrs'],
+  template: variant => (variant === 'cqrs' ? 'cqrs/service.cls' : 'service.cls'),
   segments: () => ['service'],
   fileName: cls('Service'),
   dependsOn: ['contract', 'business-entity'],
+  context: spec => ({
+    commands: facadeEntries(spec, (spec.commands as string[] | undefined) ?? DEFAULT_COMMANDS, 'command'),
+    queries: facadeEntries(spec, (spec.queries as string[] | undefined) ?? DEFAULT_QUERIES, 'query'),
+  }),
 })
 
 registerComponent({
