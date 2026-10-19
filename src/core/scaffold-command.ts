@@ -7,7 +7,7 @@ import type { ComponentKind, ComponentSpec, ScaffoldResult } from './types.js'
 import type { FieldSpec } from '../contracts/index.js'
 
 /** Kinds generated once per operation (everything else is generated once per entity). */
-export const COMMAND_KINDS: ComponentKind[] = ['command', 'command-handler']
+export const COMMAND_KINDS: ComponentKind[] = ['command', 'command-handler', 'command-handler-test']
 export const QUERY_KINDS: ComponentKind[] = ['query', 'query-handler']
 
 export interface ScaffoldWarning {

@@ -419,6 +419,63 @@ end class.
 
 exports[`every component (snapshots) > command-handler > file 1`] = `"out/src/com/acme/Customer/command/handler/CreateCustomerCommandHandler.cls"`;
 
+exports[`every component (snapshots) > command-handler-test > content 1`] = `
+"/* ablunit tests for com.acme.Customer.command.handler.CreateCustomerCommandHandler */
+using openedge.core.assert.
+
+block-level on error undo, throw.
+
+class com.acme.Customer.command.handler.CreateCustomerCommandHandlerTest:
+
+  define variable l-handler-o as com.acme.Customer.command.handler.CreateCustomerCommandHandler no-undo.
+
+  @Setup.
+  method public void setup():
+    l-handler-o = new com.acme.Customer.command.handler.CreateCustomerCommandHandler().
+    /* todo: prepare test data / session context */
+  end method.
+
+  @TearDown.
+  method public void teardown():
+    if valid-object(l-handler-o) then
+      delete object l-handler-o.
+  end method.
+
+  @Test.
+  method public void executeSucceeds():
+    define variable l-command-o as com.acme.Customer.command.command.CreateCustomerCommand no-undo.
+    define variable l-result-o  as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+
+    l-command-o = new com.acme.Customer.command.command.CreateCustomerCommand().
+    /* todo: l-command-o:CustNum = <INTEGER test value>. */
+    /* todo: l-command-o:Name = <CHARACTER test value>. */
+
+    l-result-o = l-handler-o:execute(l-command-o).
+
+    assert:istrue(l-result-o:success).
+    /* todo: assert on the stored data */
+  end method.
+
+  @Test.
+  @Ignore.
+  method public void executeReportsErrors():
+    define variable l-command-o as com.acme.Customer.command.command.CreateCustomerCommand no-undo.
+    define variable l-result-o  as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+
+    l-command-o = new com.acme.Customer.command.command.CreateCustomerCommand().
+    /* todo: arrange an invalid command, then remove @Ignore */
+
+    l-result-o = l-handler-o:execute(l-command-o).
+
+    assert:isfalse(l-result-o:success).
+  end method.
+
+end class.
+"
+`;
+
+exports[`every component (snapshots) > command-handler-test > file 1`] = `"out/test/com/acme/Customer/command/handler/CreateCustomerCommandHandlerTest.cls"`;
+
 exports[`every component (snapshots) > command-result > content 1`] = `
 "/* outcome of a command for Customer: success flag, error messages and the generated key, no business logic */
 class com.acme.Customer.command.result.CustomerCommandResult:

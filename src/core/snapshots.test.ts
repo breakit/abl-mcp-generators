@@ -18,6 +18,7 @@ const extra: Partial<Record<ComponentKind, Record<string, unknown>>> = {
   task: { inputFields: [{ name: 'Id', dataType: 'INTEGER' }], outputFields: [{ name: 'Ok', dataType: 'LOGICAL' }] },
   command: { operation: 'Create' },
   'command-handler': { operation: 'Create' },
+  'command-handler-test': { operation: 'Create' },
   query: { operation: 'GetById' },
   'query-handler': { operation: 'GetById' },
   'legacy-backend': { package: 'sagedpw.employee', name: 'EmployeeManager' },
@@ -65,7 +66,7 @@ describe('layout invariants', () => {
 
   it('every registered kind is covered by the snapshot suite', () => {
     expect(listComponents().sort()).toEqual(
-      ['business-entity', 'command', 'command-handler', 'command-result', 'contract', 'controller', 'legacy-backend', 'legacy-page',
+      ['business-entity', 'command', 'command-handler', 'command-handler-test', 'command-result', 'contract', 'controller', 'legacy-backend', 'legacy-page',
         'query', 'query-handler', 'service', 'task', 'test', 'workflow'].sort(),
     )
   })

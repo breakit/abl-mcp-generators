@@ -14,22 +14,23 @@ const spec = {
 const names = (r: { files: { file: string }[] }) => r.files.map(f => f.file.split('/').pop())
 
 describe('scaffoldCommand', () => {
-  it('generates command + handler for one use case', () => {
+  it('generates command + handler + handler test for one use case', () => {
     const r = scaffoldCommand(spec, 'Create')
-    expect(names(r)).toEqual(['CreateCustomerCommand.cls', 'CreateCustomerCommandHandler.cls'])
-    expect(r.warnings.map(w => w.missing).sort()).toEqual(['business-entity', 'command-result'])
+    expect(names(r)).toEqual(['CreateCustomerCommand.cls', 'CreateCustomerCommandHandler.cls', 'CreateCustomerCommandHandlerTest.cls'])
+    expect(r.files[2].file).toBe('out/test/com/acme/Customer/command/handler/CreateCustomerCommandHandlerTest.cls')
+    expect([...new Set(r.warnings.map(w => w.missing))].sort()).toEqual(['business-entity', 'command-result'])
   })
 
   it('can add the command result and drop the handler', () => {
     const r = scaffoldCommand(spec, 'Create', { include: ['command', 'command-handler', 'command-result'] })
     expect(names(r)).toContain('CustomerCommandResult.cls')
-    expect(r.warnings.map(w => w.missing)).toEqual(['business-entity'])
+    expect([...new Set(r.warnings.map(w => w.missing))]).toEqual(['business-entity'])
     expect(names(scaffoldCommand(spec, 'Create', { include: ['command'] }))).toEqual(['CreateCustomerCommand.cls'])
   })
 
   it('generates the optional task from the command payload, only on request', () => {
     const op = { name: 'Approve', fields: ['CustNum'], task: 'approve-customer' }
-    expect(names(scaffoldCommand(spec, op))).toEqual(['ApproveCustomerCommand.cls', 'ApproveCustomerCommandHandler.cls'])
+    expect(names(scaffoldCommand(spec, op, { include: ['command', 'command-handler'] }))).toEqual(['ApproveCustomerCommand.cls', 'ApproveCustomerCommandHandler.cls'])
     const r = scaffoldCommand(spec, op, { include: ['command', 'command-handler', 'task'] })
     const task = r.files.find(f => f.file.endsWith('ApproveCustomer.cls') && f.file.includes('/task/'))!
     expect(task.file).toBe('out/src/com/acme/Customer/task/ApproveCustomer.cls')
@@ -62,7 +63,7 @@ describe('scaffoldEntity builds on them', () => {
 
   it('output equals the union of the per-operation scaffolds', () => {
     const viaEntity = scaffoldEntity(spec, { include: ['command', 'command-handler'], commands: ['Create', 'Delete'] }).files
-    const viaOps = ['Create', 'Delete'].flatMap(op => scaffoldCommand(spec, op).files)
+    const viaOps = ['Create', 'Delete'].flatMap(op => scaffoldCommand(spec, op, { include: ['command', 'command-handler'] }).files)
     expect(viaEntity.map(f => f.file).sort()).toEqual(viaOps.map(f => f.file).sort())
     for (const f of viaEntity) expect(viaOps.find(o => o.file === f.file)!.content).toBe(f.content)
   })

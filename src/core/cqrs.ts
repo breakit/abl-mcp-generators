@@ -108,6 +108,25 @@ registerComponent({
   fileName: spec => `${resultClassName(spec)}.cls`,
 })
 
+registerComponent({
+  kind: 'command-handler-test',
+  template: () => 'cqrs/command-handler-test.cls',
+  // mirrors the handler folder in the test tree
+  segments: () => [...SEGMENTS['command-handler']],
+  tree: 'test',
+  fileName: spec => `${cqrsClassName('command-handler', spec)}Test.cls`,
+  dependsOn: ['command-handler', 'command', 'command-result'],
+  context: spec => {
+    const resolved = operationOf(spec)
+    return {
+      fields: resolved.fields,
+      isDelete: resolved.kind === 'delete',
+      handlerFqn: cqrsFqn('command-handler', spec, resolved.name),
+      commandFqn: cqrsFqn('command', spec, resolved.name),
+    }
+  },
+})
+
 // the handler template follows the operation kind: create | update | delete | custom
 registerComponent({
   kind: 'command-handler',

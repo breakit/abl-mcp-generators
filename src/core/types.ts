@@ -15,6 +15,7 @@ export type ComponentKind =
   | 'query'
   | 'query-handler'
   | 'command-result'
+  | 'command-handler-test'
   | 'legacy-backend'
   | 'legacy-page'
 

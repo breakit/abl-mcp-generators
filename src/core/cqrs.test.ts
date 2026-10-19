@@ -239,3 +239,35 @@ describe('query side', () => {
     expect(generateComponent('query', { ...keyed, operation: 'GetById' }).content).not.toContain('Skip')
   })
 })
+
+describe('command handler tests', () => {
+  const t = (operation: unknown) =>
+    generateComponent('command-handler-test', { ...spec, operation } as never)
+
+  it('lives in the test tree and mirrors the handler folder', () => {
+    const r = t('Create')
+    expect(r.file).toBe('out/test/com/acme/Customer/command/handler/CreateCustomerCommandHandlerTest.cls')
+    expect(r.content).toContain('class com.acme.Customer.command.handler.CreateCustomerCommandHandlerTest:')
+  })
+
+  it('tests the handler through its result', () => {
+    const c = t('Create').content
+    expect(c).toContain('define variable l-handler-o as com.acme.Customer.command.handler.CreateCustomerCommandHandler no-undo.')
+    expect(c).toContain('l-result-o = l-handler-o:execute(l-command-o).')
+    expect(c).toContain('assert:istrue(l-result-o:success).')
+    expect(c).toContain('@Ignore.')
+    expect(c).toContain('/* todo: l-command-o:CustNum = <INTEGER test value>. */')
+    expect(c).not.toMatch(/\{\{/)
+  })
+
+  it('delete asserts on removal; works for custom commands', () => {
+    expect(t('Delete').content).toContain('no longer exists')
+    expect(t('Approve').content).toContain('ApproveCustomerCommandHandler')
+  })
+
+  it('warns when the handler or command is missing, and is generated per operation', () => {
+    const r = scaffoldEntity(spec, { include: ['command-handler-test'], commands: ['Create', 'Delete'] })
+    expect(r.files).toHaveLength(2)
+    expect(r.warnings.map(w => w.missing)).toEqual(expect.arrayContaining(['command-handler', 'command']))
+  })
+})
