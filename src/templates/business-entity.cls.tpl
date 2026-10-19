@@ -32,7 +32,7 @@ class {{package}}.{{className}} inherits openedge.businesslogic.businessentity:
    *   l-filter-c = substitute("where tenantid = '&1'", l-tenant-id).
    *   if request:getfilter() <> "" then l-filter-c = l-filter-c + " and " + request:getfilter().
    *   l-query-h = l-buffer-h:query-prepare(substitute(
-   *     "for each {{tableName}} &1 by {{#each fields}}{{#first}}{{name}}{{/first}}{{/each}}", l-filter-c)).
+   *     "for each {{tableName}} &1 by {{#each fields}}{{#if first}}{{name}}{{/if}}{{/each}}", l-filter-c)).
    *   /* for pagination: request:rowspertable, request:startrow */.
    */
   @openapi.openedge.export(type="rest", usereturnvalue="true").

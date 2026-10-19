@@ -1,4 +1,4 @@
-import { loadAndRender, toKebab } from '../template.js'
+import { loadAndRender, toKebab, toPascal } from '../template.js'
 import { resolveLocation, derivePackage, entityFolder, entityName, packagePath, applyConfig } from './layout.js'
 import { getComponent, resolveVariant } from './registry.js'
 import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
@@ -29,7 +29,7 @@ export function renderComponent(
     package: loc.package,
     // cross-component references (fully qualified, since each part lives in its own package)
     entityFqn: `${packageOf('business-entity', spec)}.${entity}`,
-    serviceFqn: `${packageOf('service', spec)}.${spec.name}Service`,
+    serviceFqn: `${packageOf('service', spec)}.${toPascal(spec.name)}Service`,
     // include path relative to the source root (propath entry)
     contractInclude: [packagePath(spec), entityFolder(spec), 'contract', `${toKebab(entity)}-contract.i`]
       .filter(Boolean)

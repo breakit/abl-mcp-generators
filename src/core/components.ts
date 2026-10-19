@@ -1,10 +1,10 @@
 import { entityName } from './layout.js'
 import { DEFAULT_COMMANDS, DEFAULT_QUERIES, facadeEntries } from './cqrs.js'
-import { toKebab } from '../template.js'
+import { toKebab, toPascal } from '../template.js'
 import { registerComponent } from './registry.js'
 import type { ComponentSpec } from './types.js'
 
-const cls = (suffix = '') => (spec: ComponentSpec) => `${spec.name}${suffix}.cls`
+const cls = (suffix = '') => (spec: ComponentSpec) => `${toPascal(spec.name)}${suffix}.cls`
 
 registerComponent({
   kind: 'business-entity',
