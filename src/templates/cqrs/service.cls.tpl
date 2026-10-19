@@ -12,7 +12,7 @@ class {{package}}.{{className}}:
 {{/each}}  end constructor.
 {{#each commands}}
   /* command: {{operation}} */
-  method public logical {{methodName}}(input i-command-o as {{messageFqn}}):
+  method public {{resultFqn}} {{methodName}}(input i-command-o as {{messageFqn}}):
     return l-{{handlerVar}}-o:execute(i-command-o).
   end method.
 {{/each}}{{#each queries}}

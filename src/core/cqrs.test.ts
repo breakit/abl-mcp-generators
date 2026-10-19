@@ -25,6 +25,7 @@ describe('single command / query parts', () => {
     expect(r.file).toBe('out/src/com/acme/Customer/command/handler/CreateCustomerCommandHandler.cls')
     expect(r.content).toContain('class com.acme.Customer.command.handler.CreateCustomerCommandHandler:')
     expect(r.content).toContain('input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand')
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult execute(')
     expect(r.content).toContain('as com.acme.Customer.business.Customer no-undo')
   })
 
@@ -51,7 +52,7 @@ describe('service facade', () => {
   it('dispatches to the default handlers', () => {
     const r = generateComponent('service', spec, { variant: 'cqrs' })
     expect(r.file).toBe('out/src/com/acme/Customer/service/CustomerService.cls')
-    expect(r.content).toContain('method public logical create(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand)')
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult create(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand)')
     expect(r.content).toContain('method public handle getById(input i-query-o as com.acme.Customer.query.query.GetByIdCustomerQuery)')
     expect(r.content).toContain('l-create-command-handler-o = new com.acme.Customer.command.handler.CreateCustomerCommandHandler()')
     expect(r.content).toContain('return l-list-query-handler-o:execute(i-query-o)')
@@ -60,7 +61,7 @@ describe('service facade', () => {
 
   it('uses custom operations', () => {
     const r = generateComponent('service', { ...spec, commands: ['Approve'], queries: [] }, { variant: 'cqrs' })
-    expect(r.content).toContain('method public logical approve(')
+    expect(r.content).toContain('method public com.acme.Customer.command.result.CustomerCommandResult approve(')
     expect(r.content).not.toContain('create(')
     expect(r.content).not.toContain('method public handle')
   })
@@ -143,5 +144,60 @@ describe('command-result', () => {
   it('handlers warn when it is missing', () => {
     const r = scaffoldEntity(spec, { include: ['command-handler'], commands: ['Create'] })
     expect(r.warnings.map(w => w.missing)).toContain('command-result')
+  })
+})
+
+describe('command handler bodies', () => {
+  const keyed = {
+    ...spec,
+    fields: [
+      { name: 'CustNum', dataType: 'INTEGER', key: true },
+      { name: 'Name', dataType: 'CHARACTER' },
+    ],
+  }
+  const h = (operation: unknown) => generateComponent('command-handler', { ...keyed, operation } as never).content
+
+  it('create: builds a row from the command, calls updatedata, fills the result', () => {
+    const c = h('Create')
+    expect(c).toContain('{ com/acme/Customer/contract/customer-contract.i }')
+    expect(c).toContain('l-customer-tt.CustNum = i-command-o:CustNum.')
+    expect(c).toContain('l-customer-tt.Name = i-command-o:Name.')
+    expect(c).toContain('l-be-o:updatedata(input dataset l-customer-ds)')
+    expect(c).toContain('l-result-o:collecterrors(dataset l-customer-ds:handle)')
+    expect(c).toContain('as com.acme.Customer.command.result.CustomerCommandResult')
+  })
+
+  it('update: key first (unchanged), then the changed values', () => {
+    const c = h('Update')
+    expect(c.indexOf('l-customer-tt.CustNum')).toBeLessThan(c.indexOf('accept-changes'))
+    expect(c.indexOf('accept-changes')).toBeLessThan(c.indexOf('l-customer-tt.Name'))
+    expect(c).toContain('l-be-o:updatedata')
+  })
+
+  it('delete: deletes the row and calls deletedata', () => {
+    const c = h('Delete')
+    expect(c).toContain('delete l-customer-tt.')
+    expect(c).toContain('l-be-o:deletedata(input dataset l-customer-ds)')
+    expect(c).not.toContain('l-customer-tt.Name')
+  })
+
+  it('custom without task: plain stub, no task reference', () => {
+    const c = h('Approve')
+    expect(c).not.toMatch(/task/i)
+    expect(c).toContain('return l-result-o.')
+  })
+
+  it('custom with task: delegates to the task in Customer/task', () => {
+    const c = h({ name: 'Approve', task: 'approve-customer', fields: ['CustNum'] })
+    expect(c).toContain('define variable l-task-o as com.acme.Customer.task.ApproveCustomer no-undo.')
+    expect(c).toContain('l-task-o:execute(input dataset l-input-ds, output dataset l-output-ds)')
+    expect(c).toContain('field CustNum as INTEGER')
+  })
+
+  it('never requires a task: commands and tasks generate independently', () => {
+    expect(() => generateComponent('command', { ...keyed, operation: { name: 'Approve', task: 'X' } })).not.toThrow()
+    const t = scaffoldEntity(keyed, { include: ['command', 'command-handler', 'command-result'], commands: [{ name: 'Approve', task: 'X' }] })
+    expect(t.warnings.map(w => w.missing)).not.toContain('task')
+    expect(() => generateComponent('task', { ...keyed, inputFields: [], outputFields: [] })).not.toThrow()
   })
 })

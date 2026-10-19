@@ -38,7 +38,7 @@ export function renderComponent(
     ...def.context?.(spec, loc),
   }
 
-  return { file: loc.file, content: loadAndRender(def.template(variant), ctx) }
+  return { file: loc.file, content: loadAndRender(def.template(variant, spec), ctx) }
 }
 
 /** Package a given kind would have for this entity, e.g. to reference it from another component. */

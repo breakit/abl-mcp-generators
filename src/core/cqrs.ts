@@ -1,6 +1,6 @@
 import { toPascal } from '../template.js'
 import { derivePackage } from './layout.js'
-import { resolveOperation } from './operations.js'
+import { resolveOperation, keyFields } from './operations.js'
 import type { OperationSpec, ResolvedOperation } from './operations.js'
 import type { FieldSpec } from '../contracts/index.js'
 import { registerComponent } from './registry.js'
@@ -10,6 +10,11 @@ export const DEFAULT_COMMANDS = ['Create', 'Update', 'Delete']
 export const DEFAULT_QUERIES = ['GetById', 'List']
 
 export interface FieldLike { name: string; dataType: string }
+
+/** get/list/custom kinds are not write operations: only create/update/delete have a dedicated handler body. */
+function handlerFlavor(kind: string): string {
+  return kind === 'create' || kind === 'update' || kind === 'delete' ? kind : 'custom'
+}
 
 /** The operation of a command/query component: `spec.operation` is a name or an OperationSpec. */
 export function operationOf(spec: ComponentSpec): ResolvedOperation {
@@ -102,6 +107,28 @@ registerComponent({
   fileName: spec => `${resultClassName(spec)}.cls`,
 })
 
-def('command-handler', 'command-handler.cls', ['command', 'command-result', 'business-entity'])
+// the handler template follows the operation kind: create | update | delete | custom
+registerComponent({
+  kind: 'command-handler',
+  template: (_v, spec) => `cqrs/command-handler.${handlerFlavor(operationOf(spec!).kind)}.cls`,
+  segments: () => [...SEGMENTS['command-handler']],
+  fileName: spec => `${cqrsClassName('command-handler', spec)}.cls`,
+  dependsOn: ['command', 'command-result', 'business-entity'],
+  context: spec => {
+    const resolved = operationOf(spec)
+    const entityFields = (spec.fields as FieldSpec[] | undefined) ?? []
+    const keys = new Set(keyFields(entityFields).map(f => f.name))
+    return {
+      operation: resolved.name,
+      operationKind: resolved.kind,
+      fields: resolved.fields,
+      keyFields: resolved.fields.filter(f => keys.has(f.name)),
+      valueFields: resolved.fields.filter(f => !keys.has(f.name)),
+      task: resolved.task,
+      taskFqn: resolved.task ? `${derivePackage(spec, ['task'])}.${toPascal(resolved.task)}` : '',
+      commandFqn: cqrsFqn('command', spec, resolved.name),
+    }
+  },
+})
 def('query', 'query.cls', [])
 def('query-handler', 'query-handler.cls', ['query', 'business-entity'])

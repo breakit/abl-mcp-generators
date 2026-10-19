@@ -64,6 +64,6 @@ describe('operation model in generators', () => {
     expect(by('DeleteCustomerCommand.cls')).toContain('property Region')
     expect(by('ApproveCustomerCommand.cls')).toContain('property CustNum')
     expect(by('GetByIdCustomerQuery.cls')).toContain('property Region')
-    expect(by('CustomerService.cls')).toContain('method public logical approve(')
+    expect(by('CustomerService.cls')).toContain('method public com.acme.Customer.command.result.CustomerCommandResult approve(')
   })
 })

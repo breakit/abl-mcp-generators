@@ -26,6 +26,14 @@ const extra: Partial<Record<ComponentKind, Record<string, unknown>>> = {
 
 const variants: Record<string, string[]> = { controller: ['rest', 'soap'], service: ['default', 'cqrs'] }
 
+// command handlers follow the operation kind
+const handlerOps = [
+  { name: 'Update' },
+  { name: 'Delete' },
+  { name: 'Approve' },
+  { name: 'Approve', task: 'ApproveCustomer' },
+]
+
 describe('every component (snapshots)', () => {
   for (const kind of listComponents()) {
     for (const variant of variants[kind] ?? [undefined as unknown as string]) {
@@ -61,4 +69,14 @@ describe('layout invariants', () => {
         'query', 'query-handler', 'service', 'task', 'test', 'workflow'].sort(),
     )
   })
+})
+
+describe('command handler flavours (snapshots)', () => {
+  for (const op of handlerOps) {
+    it(`${op.name}${op.task ? ' with task' : ''}`, () => {
+      const r = generateComponent('command-handler', { ...base, operation: op })
+      expect(r.content).toMatchSnapshot()
+      expect(r.content).not.toMatch(/\{\{/)
+    })
+  }
 })

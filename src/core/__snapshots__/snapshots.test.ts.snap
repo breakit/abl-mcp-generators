@@ -1,5 +1,154 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`command handler flavours (snapshots) > Approve 1`] = `
+"/* handler for com.acme.Customer.command.command.ApproveCustomerCommand — custom command */
+class com.acme.Customer.command.handler.ApproveCustomerCommandHandler:
+
+  constructor public ApproveCustomerCommandHandler():
+    /* todo: initialise what the command needs (business entity, services, ...) */
+  end constructor.
+
+  method public com.acme.Customer.command.result.CustomerCommandResult execute(input i-command-o as com.acme.Customer.command.command.ApproveCustomerCommand):
+    define variable l-result-o as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+    l-result-o = new com.acme.Customer.command.result.CustomerCommandResult().
+
+    /* todo: implement the command; on failure: l-result-o:addError("...") */
+
+    return l-result-o.
+  end method.
+
+end class.
+"
+`;
+
+exports[`command handler flavours (snapshots) > Approve with task 1`] = `
+"/* handler for com.acme.Customer.command.command.ApproveCustomerCommand — custom command, delegates to the business task com.acme.Customer.task.ApproveCustomer */
+class com.acme.Customer.command.handler.ApproveCustomerCommandHandler:
+
+  /* input of the task: must match the dataset of the task class */
+  define temp-table l-input-tt no-undo
+    .
+  define dataset l-input-ds for l-input-tt.
+  /* output of the task: add the extra output fields of the task here */
+  define temp-table l-output-tt no-undo
+    field statuscode    as character
+    field statusmessage as character.
+  define dataset l-output-ds for l-output-tt.
+
+  define variable l-task-o as com.acme.Customer.task.ApproveCustomer no-undo.
+
+  constructor public ApproveCustomerCommandHandler():
+    l-task-o = new com.acme.Customer.task.ApproveCustomer().
+  end constructor.
+
+  method public com.acme.Customer.command.result.CustomerCommandResult execute(input i-command-o as com.acme.Customer.command.command.ApproveCustomerCommand):
+    define variable l-result-o as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+    define variable l-status-c as character no-undo.
+    l-result-o = new com.acme.Customer.command.result.CustomerCommandResult().
+
+    /* todo: authorization and business validation */
+
+    empty temp-table l-input-tt.
+    create l-input-tt.
+
+    l-status-c = l-task-o:execute(input dataset l-input-ds, output dataset l-output-ds).
+    if l-status-c <> "success" then do:
+      find first l-output-tt no-error.
+      l-result-o:addError(if available l-output-tt then l-output-tt.statusmessage else l-status-c).
+    end.
+
+    return l-result-o.
+  end method.
+
+end class.
+"
+`;
+
+exports[`command handler flavours (snapshots) > Delete 1`] = `
+"/* handler for com.acme.Customer.command.command.DeleteCustomerCommand — write side, goes through the business entity (its signatures are unchanged) */
+class com.acme.Customer.command.handler.DeleteCustomerCommandHandler:
+
+  /* note: updatedata/deletedata evaluate row-state, so the contract temp-table needs a before-table */
+  { com/acme/Customer/contract/customer-contract.i }
+  define variable l-be-o as com.acme.Customer.business.Customer no-undo.
+
+  constructor public DeleteCustomerCommandHandler():
+    l-be-o = new com.acme.Customer.business.Customer().
+  end constructor.
+
+  /* execute — delete: the row is created as unchanged, then deleted, so the entity sees row-deleted */
+  method public com.acme.Customer.command.result.CustomerCommandResult execute(input i-command-o as com.acme.Customer.command.command.DeleteCustomerCommand):
+    define variable l-result-o as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+    define variable l-ok-l     as logical no-undo.
+    l-result-o = new com.acme.Customer.command.result.CustomerCommandResult().
+
+    /* todo: authorization and business validation; on failure: l-result-o:addError("...") and return l-result-o. */
+
+    empty temp-table l-customer-tt.
+    temp-table l-customer-tt:tracking-changes = false.
+    create l-customer-tt.
+    l-customer-tt.CustNum = i-command-o:CustNum.
+    dataset l-customer-ds:accept-changes().
+    temp-table l-customer-tt:tracking-changes = true.
+    delete l-customer-tt.
+
+    l-ok-l = l-be-o:deletedata(input dataset l-customer-ds).
+
+    if dataset l-customer-ds:error then
+      l-result-o:collecterrors(dataset l-customer-ds:handle).
+    else if not l-ok-l then
+      l-result-o:addError("delete failed").
+
+    return l-result-o.
+  end method.
+
+end class.
+"
+`;
+
+exports[`command handler flavours (snapshots) > Update 1`] = `
+"/* handler for com.acme.Customer.command.command.UpdateCustomerCommand — write side, goes through the business entity (its signatures are unchanged) */
+class com.acme.Customer.command.handler.UpdateCustomerCommandHandler:
+
+  /* note: updatedata/deletedata evaluate row-state, so the contract temp-table needs a before-table */
+  { com/acme/Customer/contract/customer-contract.i }
+  define variable l-be-o as com.acme.Customer.business.Customer no-undo.
+
+  constructor public UpdateCustomerCommandHandler():
+    l-be-o = new com.acme.Customer.business.Customer().
+  end constructor.
+
+  /* execute — update: the row is created as unchanged (key + original), then the new values are assigned */
+  method public com.acme.Customer.command.result.CustomerCommandResult execute(input i-command-o as com.acme.Customer.command.command.UpdateCustomerCommand):
+    define variable l-result-o as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+    define variable l-ok-l     as logical no-undo.
+    l-result-o = new com.acme.Customer.command.result.CustomerCommandResult().
+
+    /* todo: authorization and business validation; on failure: l-result-o:addError("...") and return l-result-o. */
+
+    empty temp-table l-customer-tt.
+    temp-table l-customer-tt:tracking-changes = false.
+    create l-customer-tt.
+    l-customer-tt.CustNum = i-command-o:CustNum.
+    /* todo: load the current values (original row) before accepting, e.g. via l-be-o:getdata */
+    dataset l-customer-ds:accept-changes().
+    temp-table l-customer-tt:tracking-changes = true.
+    l-customer-tt.Name = i-command-o:Name.
+
+    l-ok-l = l-be-o:updatedata(input dataset l-customer-ds).
+
+    if dataset l-customer-ds:error then
+      l-result-o:collecterrors(dataset l-customer-ds:handle).
+    else if not l-ok-l then
+      l-result-o:addError("update failed").
+
+    return l-result-o.
+  end method.
+
+end class.
+"
+`;
+
 exports[`every component (snapshots) > business-entity > content 1`] = `
 "@openapi.openedge.export file (type="rest", executionmode="singleton").
 class com.acme.Customer.business.Customer inherits openedge.businesslogic.businessentity:
@@ -229,23 +378,39 @@ end class.
 exports[`every component (snapshots) > command > file 1`] = `"out/src/com/acme/Customer/command/command/CreateCustomerCommand.cls"`;
 
 exports[`every component (snapshots) > command-handler > content 1`] = `
-"/* handler for com.acme.Customer.command.command.CreateCustomerCommand — contains the write logic of the command */
+"/* handler for com.acme.Customer.command.command.CreateCustomerCommand — write side, goes through the business entity (its signatures are unchanged) */
 class com.acme.Customer.command.handler.CreateCustomerCommandHandler:
 
+  /* note: updatedata/deletedata evaluate row-state, so the contract temp-table needs a before-table */
+  { com/acme/Customer/contract/customer-contract.i }
   define variable l-be-o as com.acme.Customer.business.Customer no-undo.
 
   constructor public CreateCustomerCommandHandler():
     l-be-o = new com.acme.Customer.business.Customer().
   end constructor.
 
-  /*
-   * execute — apply the command.
-   * todo: map command properties to the contract dataset ({ com/acme/Customer/contract/customer-contract.i })
-   *       and call l-be-o:createdata / updatedata / deletedata.
-   */
-  method public logical execute(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand):
-    /* todo: authorization, validation, persistence */
-    return true.
+  /* execute — create: adds one new row and sends it to the entity */
+  method public com.acme.Customer.command.result.CustomerCommandResult execute(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand):
+    define variable l-result-o as com.acme.Customer.command.result.CustomerCommandResult no-undo.
+    define variable l-ok-l     as logical no-undo.
+    l-result-o = new com.acme.Customer.command.result.CustomerCommandResult().
+
+    /* todo: authorization and business validation; on failure: l-result-o:addError("...") and return l-result-o. */
+
+    empty temp-table l-customer-tt.
+    temp-table l-customer-tt:tracking-changes = true.
+    create l-customer-tt.
+    l-customer-tt.CustNum = i-command-o:CustNum.
+    l-customer-tt.Name = i-command-o:Name.
+
+    l-ok-l = l-be-o:updatedata(input dataset l-customer-ds).
+
+    if dataset l-customer-ds:error then
+      l-result-o:collecterrors(dataset l-customer-ds:handle).
+    else if not l-ok-l then
+      l-result-o:addError("create failed").
+
+    return l-result-o.
   end method.
 
 end class.
@@ -661,17 +826,17 @@ class com.acme.Customer.service.CustomerService:
   end constructor.
 
   /* command: Create */
-  method public logical create(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand):
+  method public com.acme.Customer.command.result.CustomerCommandResult create(input i-command-o as com.acme.Customer.command.command.CreateCustomerCommand):
     return l-create-command-handler-o:execute(i-command-o).
   end method.
 
   /* command: Update */
-  method public logical update(input i-command-o as com.acme.Customer.command.command.UpdateCustomerCommand):
+  method public com.acme.Customer.command.result.CustomerCommandResult update(input i-command-o as com.acme.Customer.command.command.UpdateCustomerCommand):
     return l-update-command-handler-o:execute(i-command-o).
   end method.
 
   /* command: Delete */
-  method public logical delete(input i-command-o as com.acme.Customer.command.command.DeleteCustomerCommand):
+  method public com.acme.Customer.command.result.CustomerCommandResult delete(input i-command-o as com.acme.Customer.command.command.DeleteCustomerCommand):
     return l-delete-command-handler-o:execute(i-command-o).
   end method.
 

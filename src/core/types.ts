@@ -70,7 +70,7 @@ export interface ComponentDefinition {
   /** Allowed variants; the first is the default. Omit for components without variants. */
   variants?: string[]
   /** Template file name, may depend on the variant. */
-  template: (variant?: string) => string
+  template: (variant?: string, spec?: ComponentSpec) => string
   /** Folder segments below the entity root. */
   segments: (variant?: string) => string[]
   /** File name (no folder) for the generated artifact. */
