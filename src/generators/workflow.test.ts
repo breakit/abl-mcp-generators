@@ -14,7 +14,7 @@ describe('generateWorkflow', () => {
 
   it('generates workflow class', () => {
     const result = generateWorkflow(baseSpec)
-    expect(result).toContain('class com.test.workflows.OrderWorkflow')
+    expect(result).toContain('class com.test.order-workflow.workflow.OrderWorkflow')
   })
 
   it('generates context temp-table and dataset', () => {

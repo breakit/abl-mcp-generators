@@ -1,10 +1,10 @@
 @openapi.openedge.export file (type="rest", executionmode="singleton").
-class {{package}}.{{name}}service:
+class {{package}}.{{className}}:
 
   /* business logic service for {{entityName}} */
 
-  { {{kebabName}}-contract.i }
-  define variable l-be-o as {{entityName}} no-undo.
+  { {{contractInclude}} }
+  define variable l-be-o as {{entityFqn}} no-undo.
 
   /*
    * multi-tenant / security context — uncomment for your security framework.
@@ -14,8 +14,8 @@ class {{package}}.{{name}}service:
    *   define variable l-role-list-c as character no-undo.
    */
 
-  constructor public {{name}}service():
-    l-be-o = new {{entityName}}().
+  constructor public {{className}}():
+    l-be-o = new {{entityFqn}}().
     /*
      * todo: initialize security context from session:
      *   assign l-tenant-id   = session:current-request-info:getcontextvalue("tenant")

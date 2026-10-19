@@ -1,9 +1,9 @@
 @openapi.openedge.export file (type="rest", executionmode="singleton").
-class {{package}}.{{name}} inherits openedge.businesslogic.businessentity:
+class {{package}}.{{className}} inherits openedge.businesslogic.businessentity:
   {{#if description}}/* {{description}} */{{/if}}
 
   /* shared data contract */
-  { {{kebabName}}-contract.i }
+  { {{contractInclude}} }
 
   /*
    * logging / metrics — uncomment and customize:
@@ -13,7 +13,7 @@ class {{package}}.{{name}} inherits openedge.businesslogic.businessentity:
    *   define variable l-metrics-tt as handle no-undo. /* temp-table handle for metrics */.
    *
    *   /* convenience — log with source prefix */.
-   *   define variable l-log-source-c as character no-undo initial "{{name}}".
+   *   define variable l-log-source-c as character no-undo initial "{{className}}".
    */
 
   /*

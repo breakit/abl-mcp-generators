@@ -13,7 +13,7 @@ describe('generateComponent', () => {
   it('generates a single part', () => {
     const r = generateComponent('service', spec)
     expect(r.file).toBe('out/src/customer/service/CustomerService.cls')
-    expect(r.content).toContain('com.acme.customer.service.Customerservice')
+    expect(r.content).toContain('class com.acme.customer.service.CustomerService')
   })
 
   it('does not require other parts', () => {
@@ -54,5 +54,25 @@ describe('scaffoldEntity', () => {
 
   it('rejects unknown kinds', () => {
     expect(() => scaffoldEntity(spec, { include: ['nope' as never] })).toThrow(/unknown component/)
+  })
+})
+
+describe('cross-component references', () => {
+  const r = scaffoldEntity({ ...spec, name: 'OrderItem' }).files
+  const by = (s: string) => r.find(f => f.file.includes(s))!.content
+
+  it('references parts by fully qualified name and include path', () => {
+    expect(by('/service/')).toContain('as com.acme.order-item.business.OrderItem no-undo')
+    expect(by('/service/')).toContain('{ order-item/contract/order-item-contract.i }')
+    expect(by('/controller/rest/')).toContain('new com.acme.order-item.service.OrderItemService()')
+  })
+
+  it('leaves no unresolved placeholders', () => {
+    for (const f of r) expect(f.content, f.file).not.toMatch(/\{\{#?(className|entityFqn|serviceFqn|contractInclude|package)/)
+  })
+
+  it('names classes in the same case as their files', () => {
+    expect(by('/service/')).toContain('class com.acme.order-item.service.OrderItemService:')
+    expect(by('/controller/rest/')).toContain('constructor public OrderItemController()')
   })
 })

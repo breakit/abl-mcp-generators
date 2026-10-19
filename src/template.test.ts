@@ -114,11 +114,11 @@ describe('loadAndRender', () => {
     const result = loadAndRender('business-task.cls', {
       package: 'com.test',
       name: 'ValidateOrder',
-      kebabName: 'validate-order',
+      className: 'ValidateOrder',
       inputFields: [{ name: 'OrderId', dataType: 'INTEGER' }],
       outputFields: [{ name: 'IsValid', dataType: 'LOGICAL' }],
     })
-    expect(result).toContain('class com.test.tasks.ValidateOrder')
+    expect(result).toContain('class com.test.ValidateOrder')
     expect(result).toContain('define temp-table l-input-tt no-undo')
     expect(result).toContain('field OrderId as INTEGER')
     expect(result).toContain('method public character execute')

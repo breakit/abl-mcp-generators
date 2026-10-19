@@ -5,8 +5,12 @@ export const SOURCE_ROOT = 'src'
 export const TEST_ROOT = 'test'
 
 /** Folder of an entity: one folder per business entity. */
+export function entityName(spec: ComponentSpec): string {
+  return spec.entity ?? spec.name
+}
+
 export function entityFolder(spec: ComponentSpec): string {
-  return toKebab(spec.name)
+  return toKebab(entityName(spec))
 }
 
 export function derivePackage(spec: ComponentSpec, segments: string[]): string {

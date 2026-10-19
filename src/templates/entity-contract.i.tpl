@@ -1,7 +1,7 @@
 /* data contract for {{entityName}} — shared across business entity, service, and test */
 /*
  * usage: include this file via PROPATH in classes that need the dataset:
- *   { {{kebabName}}-contract.i }
+ *   { {{contractInclude}} }
  *
  * multi-tenant: uncomment and add your tenant field:
  *   define temp-table l-{kebabName}}-tt like {{tableName}}

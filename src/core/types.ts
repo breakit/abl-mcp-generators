@@ -18,8 +18,10 @@ export type ComponentKind =
 export interface ComponentSpec {
   /** Base package (e.g. `com.acme`). The component package is derived from it and the layout. */
   package: string
-  /** Entity name (e.g. `Customer`). */
+  /** Class/artifact name. For entity-level parts this is the entity name (e.g. `Customer`). */
   name: string
+  /** Owning business entity when `name` is a part of an entity (e.g. workflow `OrderApproval` of `Order`). Defaults to `name`. */
+  entity?: string
   tableName?: string
   outputDir?: string
   [key: string]: unknown

@@ -1,5 +1,7 @@
 import { readFileSync } from 'fs'
-import { loadAndRender, toKebab } from '../template.js'
+import { renderComponent } from '../core/render.js'
+import '../core/components.js'
+import type { ComponentSpec } from '../core/types.js'
 import type { TestSpec, ScaffoldResult, MethodSpec, ParamSpec } from '../contracts/index.js'
 
 export type { TestSpec }
@@ -86,12 +88,12 @@ function splitParams(block: string): string[] {
   return result
 }
 
+function toComponentSpec(spec: TestSpec): ComponentSpec {
+  return { ...spec, entity: spec.entityName } as unknown as ComponentSpec
+}
+
 export function generateTest(spec: TestSpec): string {
-  const ctx: Record<string, unknown> = {
-    ...spec,
-    kebabName: toKebab(spec.entityName),
-  }
-  return loadAndRender('test.cls', ctx)
+  return renderComponent('test', toComponentSpec(spec)).content
 }
 
 export function scaffoldTest(spec: TestSpec): ScaffoldResult {
@@ -108,6 +110,5 @@ export function scaffoldTest(spec: TestSpec): ScaffoldResult {
     }
   }
 
-  const content = generateTest(resolved)
-  return { file: `${resolved.outputDir}/tests/${resolved.name}/${resolved.name}-test.cls`, content }
+  return renderComponent('test', toComponentSpec(resolved))
 }

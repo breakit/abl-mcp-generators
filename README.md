@@ -119,6 +119,30 @@ define temp-table l-customer-tt no-undo
 define dataset l-customer-ds for l-customer-tt.
 ```
 
+## Output layout
+
+One folder per business entity; every part lives in its own sub-folder and its class package mirrors that folder:
+
+```
+<out>/src/<entity-kebab>/
+  business/   contract/   service/   workflow/   task/
+  controller/<api>/            (rest by default)
+<out>/test/<entity-kebab>/     (tests, separate tree)
+```
+
+```ts
+import { generateComponent, scaffoldEntity } from '@breakit/abl-mcp-generators'
+
+// one part
+generateComponent('service', { package: 'com.acme', name: 'Customer' })
+
+// any subset; missing references are reported in `warnings`
+scaffoldEntity(spec, { include: ['business-entity', 'contract'] })
+scaffoldEntity(spec, { variants: { controller: 'soap' } })
+```
+
+Propath root is `<out>/src`, so contract includes resolve as `<entity>/contract/<entity>-contract.i`. See CHANGELOG.md for migration notes.
+
 ## Templates
 
 ```
