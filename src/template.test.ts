@@ -124,3 +124,28 @@ describe('loadAndRender', () => {
     expect(result).toContain('method public character execute')
   })
 })
+
+describe('nested conditionals', () => {
+  it('handles if nested inside if (true/true)', () => {
+    expect(renderTemplate('{{#if a}}A{{#if b}}B{{/if}}C{{/if}}', { a: true, b: true })).toBe('ABC')
+  })
+
+  it('handles if nested inside if (true/false)', () => {
+    expect(renderTemplate('{{#if a}}A{{#if b}}B{{/if}}C{{/if}}', { a: true, b: false })).toBe('AC')
+  })
+
+  it('skips nested block when outer is false', () => {
+    expect(renderTemplate('x{{#if a}}A{{#if b}}B{{/if}}{{/if}}y', { a: false, b: true })).toBe('xy')
+  })
+
+  it('binds else to the correct if', () => {
+    const t = '{{#if a}}{{#if b}}1{{else}}2{{/if}}{{else}}3{{/if}}'
+    expect(renderTemplate(t, { a: true, b: true })).toBe('1')
+    expect(renderTemplate(t, { a: true, b: false })).toBe('2')
+    expect(renderTemplate(t, { a: false, b: true })).toBe('3')
+  })
+
+  it('handles sibling ifs', () => {
+    expect(renderTemplate('{{#if a}}A{{/if}}-{{#if b}}B{{/if}}', { a: true, b: true })).toBe('A-B')
+  })
+})
