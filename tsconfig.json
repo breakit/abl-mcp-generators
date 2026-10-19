@@ -13,11 +13,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@breakit/abl-mcp-core": ["../abl-mcp-core/dist/index.d.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
