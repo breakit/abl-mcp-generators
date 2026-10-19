@@ -1,6 +1,6 @@
 import { loadAndRender, toKebab } from '../template.js'
 import { resolveLocation, derivePackage, entityFolder, entityName, packagePath, applyConfig } from './layout.js'
-import { getComponent } from './registry.js'
+import { getComponent, resolveVariant } from './registry.js'
 import type { ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
 
 /**
@@ -14,7 +14,8 @@ export function renderComponent(
 ): ScaffoldResult {
   const spec = applyConfig(rawSpec, options.config)
   const def = getComponent(kind)
-  const loc = resolveLocation(def, spec, options.variant)
+  const variant = resolveVariant(def, options.variant)
+  const loc = resolveLocation(def, spec, variant)
 
   const entity = entityName(spec)
   const className = loc.file.split('/').pop()!.replace(/\.[^.]+$/, '')
@@ -36,10 +37,11 @@ export function renderComponent(
     ...def.context?.(spec, loc),
   }
 
-  return { file: loc.file, content: loadAndRender(def.template(options.variant), ctx) }
+  return { file: loc.file, content: loadAndRender(def.template(variant), ctx) }
 }
 
 /** Package a given kind would have for this entity, e.g. to reference it from another component. */
 export function packageOf(kind: ComponentKind, spec: ComponentSpec, variant?: string): string {
-  return derivePackage(spec, getComponent(kind).segments(variant))
+  const def = getComponent(kind)
+  return derivePackage(spec, def.segments(resolveVariant(def, variant)))
 }

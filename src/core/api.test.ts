@@ -48,8 +48,8 @@ describe('scaffoldEntity', () => {
   it('supports exclude and variants', () => {
     const r = scaffoldEntity(spec, { exclude: ['controller', 'service'] })
     expect(r.files).toHaveLength(2)
-    const s = scaffoldEntity(spec, { include: ['controller'], variants: { controller: 'legacy' } })
-    expect(s.files[0].file).toBe('out/src/com/acme/Customer/controller/legacy/CustomerController.cls')
+    const s = scaffoldEntity(spec, { include: ['controller'], variants: { controller: 'soap' } })
+    expect(s.files[0].file).toBe('out/src/com/acme/Customer/controller/soap/CustomerController.cls')
   })
 
   it('rejects unknown kinds', () => {

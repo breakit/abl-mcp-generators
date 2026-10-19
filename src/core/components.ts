@@ -30,8 +30,9 @@ registerComponent({
 
 registerComponent({
   kind: 'controller',
-  template: () => 'controller.cls',
-  segments: variant => ['controller', variant ?? 'rest'],
+  variants: ['rest', 'soap'],
+  template: variant => `controller/${variant}/controller.cls`,
+  segments: variant => ['controller', variant!],
   fileName: cls('Controller'),
   dependsOn: ['service'],
 })

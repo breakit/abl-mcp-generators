@@ -12,7 +12,7 @@
 ### Changed (breaking: output paths and packages)
 - One folder per business entity: `<out>/<source_root>/<package path>/<Entity>/{business,contract,service,workflow,task,controller/<api>}`; tests go to `<out>/<test_root>/<package path>/<Entity>/`. `<Entity>` is PascalCase (no hyphens).
 - Class packages equal the folder path: `<base>.<Entity>.<segments>`. Workflows and tasks no longer use the fixed `.workflows.` / `.tasks.` packages.
-- Controllers are placed by API standard (`controller/rest` by default).
+- Controllers are placed by API standard: `controller/rest` (default) and `controller/soap`, each with its own template under `templates/controller/<api>/`. Unknown variants throw an error listing the available ones; a component declares its variants in its registry definition.
 - Class names keep the file's casing (`CustomerService`, not `Customerservice`).
 - Parts reference each other by fully qualified class name; contract includes use the path `<package path>/<Entity>/contract/<entity-kebab>-contract.i` (propath root = source root).
 - `generateService`, `generateController`, `scaffoldFullEntity`, `scaffoldCcsLayer`, `generateWorkflow`, `generateBusinessTask`, `generateTest` and `scaffoldTest` are now wrappers over the component API (deprecated).

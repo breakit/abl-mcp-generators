@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { TEMPLATE_EXT } from './template.js'
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), 'templates')
-const files = readdirSync(dir)
+const files = readdirSync(dir, { recursive: true }).map(String)
 
 describe('template files', () => {
   it('keeps placeholder syntax out of files with ABL extensions', () => {

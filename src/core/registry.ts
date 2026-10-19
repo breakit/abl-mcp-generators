@@ -13,6 +13,19 @@ export function getComponent(kind: ComponentKind): ComponentDefinition {
   return def
 }
 
+/** Resolve and validate the variant: undefined -> default; unknown -> error. */
+export function resolveVariant(def: ComponentDefinition, variant?: string): string | undefined {
+  if (!def.variants) {
+    if (variant) throw new Error(`component ${def.kind} has no variants (got "${variant}")`)
+    return undefined
+  }
+  const v = variant ?? def.variants[0]
+  if (!def.variants.includes(v)) {
+    throw new Error(`unknown variant "${v}" for ${def.kind}; available: ${def.variants.join(', ')}`)
+  }
+  return v
+}
+
 export function listComponents(): ComponentKind[] {
   return [...definitions.keys()]
 }

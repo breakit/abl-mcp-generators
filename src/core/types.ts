@@ -52,6 +52,8 @@ export interface ResolvedLocation {
 /** Declarative description of one generatable component. */
 export interface ComponentDefinition {
   kind: ComponentKind
+  /** Allowed variants; the first is the default. Omit for components without variants. */
+  variants?: string[]
   /** Template file name, may depend on the variant. */
   template: (variant?: string) => string
   /** Folder segments below the entity root. */

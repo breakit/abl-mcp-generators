@@ -170,7 +170,9 @@ Contract includes resolve against the source root: `com/acme/Customer/contract/c
 src/templates/   # *.tpl = template with {{placeholders}}; .tpl keeps the ABL LSP from parsing them
 ├── business-entity.cls.tpl  # BE with REST annotations + ProDataSet
 ├── service.cls.tpl          # Service with REST annotations
-├── controller.cls.tpl       # WebHandler-based REST controller
+├── controller/
+│   ├── rest/controller.cls.tpl  # WebHandler-based REST controller
+│   └── soap/controller.cls.tpl  # SOAP controller (dataset in/out)
 ├── business-workflow.cls.tpl# Workflow class with Execute + step methods
 ├── business-task.cls.tpl    # Standalone task class with input/output datasets
 ├── test.cls.tpl             # ABLUnit test with ProDataSet
