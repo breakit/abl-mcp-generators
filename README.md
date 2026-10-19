@@ -149,8 +149,8 @@ src/templates/
 ```sh
 git clone https://github.com/breakit/abl-mcp-generators.git
 cd abl-mcp-generators
-yarn install
-yarn build
+npm install
+npm run build
 ```
 
 ### Local Multi-Repo Development
@@ -167,14 +167,14 @@ Documentation generators were extracted into `../abl-mcp-doc`.
 For local development, build `../abl-mcp-core` first, then rebuild this repo:
 
 ```sh
-yarn build
+npm run build
 ```
 
 To refresh the symlinked package graph used by `abl-mcp-server`, run this from `../abl-mcp-server`:
 
 ```sh
-yarn build:local-deps
-yarn link:local-deps
+npm run build:local-deps
+npm run link:local-deps
 ```
 
 ## Acknowledgments
