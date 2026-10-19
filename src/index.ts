@@ -11,6 +11,8 @@ export type { ProjectConfig } from './project-config.js'
 export {
   generateComponent,
   scaffoldEntity,
+  scaffoldCommand,
+  scaffoldQuery,
   DEFAULT_ENTITY_KINDS,
   listComponents,
   resolveOperation,

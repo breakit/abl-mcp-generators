@@ -11,4 +11,6 @@ export { DEFAULT_COMMANDS, DEFAULT_QUERIES, cqrsClassName, cqrsFqn } from './cqr
 export { defaultLegacyNaming, resolveLegacyNaming } from './legacy.js'
 export { renderComponent, packageOf } from './render.js'
 export { generateComponent, scaffoldEntity, DEFAULT_ENTITY_KINDS } from './api.js'
-export type { ScaffoldEntityOptions, ScaffoldEntityResult, ScaffoldWarning } from './api.js'
+export { scaffoldCommand, scaffoldQuery } from './scaffold-command.js'
+export type { ScaffoldOperationOptions, ScaffoldOperationResult, ScaffoldWarning } from './scaffold-command.js'
+export type { ScaffoldEntityOptions, ScaffoldEntityResult } from './api.js'

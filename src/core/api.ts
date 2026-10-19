@@ -1,6 +1,8 @@
 import { renderComponent } from './render.js'
 import { getComponent, listComponents } from './registry.js'
 import type { OperationSpec } from './operations.js'
+import { scaffoldCommand, scaffoldQuery, COMMAND_KINDS, QUERY_KINDS } from './scaffold-command.js'
+import type { ScaffoldWarning } from './scaffold-command.js'
 import { DEFAULT_COMMANDS, DEFAULT_QUERIES } from './cqrs.js'
 import type { ProjectConfig } from '../project-config.js'
 import type { LegacyNamingStrategy, ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
@@ -31,11 +33,6 @@ export interface ScaffoldEntityOptions {
   naming?: Partial<LegacyNamingStrategy>
 }
 
-export interface ScaffoldWarning {
-  kind: ComponentKind
-  missing: ComponentKind
-  message: string
-}
 
 export interface ScaffoldEntityResult {
   files: ScaffoldResult[]
@@ -65,11 +62,11 @@ export function scaffoldEntity(spec: ComponentSpec, options: ScaffoldEntityOptio
   const base = { ...spec, commands, queries }
   for (const kind of kinds) {
     const opts = { variant: options.variants?.[kind], config: options.config, naming: options.naming }
-    const ops = kind.startsWith('command') ? commands : kind.startsWith('query') ? queries : undefined
-    if (ops) {
-      for (const op of ops) {
-        files.push(renderComponent(kind, { ...base, operation: op }, opts))
-      }
+    if (COMMAND_KINDS.includes(kind) || QUERY_KINDS.includes(kind)) {
+      // built on the per-operation scaffolds
+      const ops = COMMAND_KINDS.includes(kind) ? commands : queries
+      const scaffold = COMMAND_KINDS.includes(kind) ? scaffoldCommand : scaffoldQuery
+      for (const op of ops) files.push(...scaffold(base, op, { include: [kind], config: options.config }).files)
     } else {
       files.push(renderComponent(kind, base, opts))
     }
