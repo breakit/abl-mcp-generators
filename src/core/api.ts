@@ -1,5 +1,6 @@
 import { renderComponent } from './render.js'
 import { getComponent, listComponents } from './registry.js'
+import type { OperationSpec } from './operations.js'
 import { DEFAULT_COMMANDS, DEFAULT_QUERIES } from './cqrs.js'
 import type { ProjectConfig } from '../project-config.js'
 import type { LegacyNamingStrategy, ComponentKind, ComponentSpec, GenerateOptions, ScaffoldResult } from './types.js'
@@ -21,9 +22,9 @@ export interface ScaffoldEntityOptions {
   /** Variant per kind, e.g. `{ controller: 'soap' }`. */
   variants?: Partial<Record<ComponentKind, string>>
   /** Command operations to generate (default: Create, Update, Delete). */
-  commands?: string[]
+  commands?: (string | OperationSpec)[]
   /** Query operations to generate (default: GetById, List). */
-  queries?: string[]
+  queries?: (string | OperationSpec)[]
   /** Settings from abl.toml (see loadProjectConfig). */
   config?: ProjectConfig
   /** Per-call naming for legacy components. */
@@ -62,18 +63,12 @@ export function scaffoldEntity(spec: ComponentSpec, options: ScaffoldEntityOptio
   const commands = options.commands ?? DEFAULT_COMMANDS
   const queries = options.queries ?? DEFAULT_QUERIES
   const base = { ...spec, commands, queries }
-  const entityFields = (spec.fields as { name: string; dataType: string }[] | undefined) ?? []
-
-  /** Default payload per operation: create/update carry the entity fields, others only the key (first field). */
-  const payload = (op: string) => (/^(create|update)$/i.test(op) ? entityFields : entityFields.slice(0, 1))
-
   for (const kind of kinds) {
     const opts = { variant: options.variants?.[kind], config: options.config, naming: options.naming }
     const ops = kind.startsWith('command') ? commands : kind.startsWith('query') ? queries : undefined
     if (ops) {
       for (const op of ops) {
-        const fields = kind.startsWith('query') && /^list$/i.test(op) ? [] : payload(op)
-        files.push(renderComponent(kind, { ...base, operation: op, fields }, opts))
+        files.push(renderComponent(kind, { ...base, operation: op }, opts))
       }
     } else {
       files.push(renderComponent(kind, base, opts))

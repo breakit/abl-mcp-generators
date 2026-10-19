@@ -554,7 +554,6 @@ exports[`every component (snapshots) > query > content 1`] = `
 class com.acme.Customer.query.query.GetByIdCustomerQuery:
 
   define public property CustNum as INTEGER no-undo get. set.
-  define public property Name as CHARACTER no-undo get. set.
 
   /* todo: add paging / sorting criteria if needed */
 

@@ -2,6 +2,8 @@ export interface FieldSpec {
   name: string
   dataType: string
   initial?: string
+  /** Part of the entity key (used for delete/get payloads). */
+  key?: boolean
 }
 
 export interface BusinessEntitySpec {

@@ -11,6 +11,7 @@
 - `legacy-backend` component (stub) with a per-call `naming` strategy (`packageOf`, `backendFile`; partial overrides, defaults mirror the caller's package).
 - `legacy-page` component (stub): single `.htm` with SpeedScript initialisation, JavaScript and HTML placeholders, placed flat in the output root; `naming.pageFile` overrides the path.
 - Golden-file snapshot tests for every component and variant, plus layout invariants (directory equals package).
+- Operation model: `commands` / `queries` accept names or `OperationSpec { name, kind, fields, task }`; `FieldSpec.key` marks key fields (composite keys). Payloads: create/update carry all fields, delete/get the key fields, list/custom none unless `fields` is given. `task` is an optional link to a Business Task; commands and tasks never require each other.
 - `toPascal` helper.
 - Templates are stored as `*.tpl` so ABL tooling does not parse placeholder syntax.
 

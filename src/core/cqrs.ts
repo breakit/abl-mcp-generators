@@ -1,5 +1,8 @@
 import { toPascal } from '../template.js'
 import { derivePackage } from './layout.js'
+import { resolveOperation } from './operations.js'
+import type { OperationSpec, ResolvedOperation } from './operations.js'
+import type { FieldSpec } from '../contracts/index.js'
 import { registerComponent } from './registry.js'
 import type { ComponentSpec, ComponentKind } from './types.js'
 
@@ -8,11 +11,17 @@ export const DEFAULT_QUERIES = ['GetById', 'List']
 
 export interface FieldLike { name: string; dataType: string }
 
-function operation(spec: ComponentSpec): string {
-  if (typeof spec.operation !== 'string' || !spec.operation.trim()) {
+/** The operation of a command/query component: `spec.operation` is a name or an OperationSpec. */
+export function operationOf(spec: ComponentSpec): ResolvedOperation {
+  const op = spec.operation as string | OperationSpec | undefined
+  if (!op || (typeof op === 'string' && !op.trim())) {
     throw new Error(`"operation" is required for command/query components (e.g. "Create")`)
   }
-  return toPascal(spec.operation)
+  return resolveOperation(op, (spec.fields as FieldSpec[] | undefined) ?? [])
+}
+
+function operation(spec: ComponentSpec): string {
+  return operationOf(spec).name
 }
 
 const SEGMENTS = {
@@ -44,14 +53,17 @@ function lowerFirst(s: string): string {
 }
 
 /** Facade entries for the given operation names. */
-export function facadeEntries(spec: ComponentSpec, ops: string[], kind: 'command' | 'query') {
-  return ops.map(op => ({
-    operation: toPascal(op),
-    methodName: lowerFirst(toPascal(op)),
-    handlerVar: `${lowerFirst(toPascal(op))}-${kind}-handler`,
-    messageFqn: cqrsFqn(kind, spec, op),
-    handlerFqn: cqrsFqn(`${kind}-handler` as Part, spec, op),
-  }))
+export function facadeEntries(spec: ComponentSpec, ops: (string | OperationSpec)[], kind: 'command' | 'query') {
+  return ops.map(o => {
+    const op = resolveOperation(o, (spec.fields as FieldSpec[] | undefined) ?? []).name
+    return {
+      operation: op,
+      methodName: lowerFirst(op),
+      handlerVar: `${lowerFirst(op)}-${kind}-handler`,
+      messageFqn: cqrsFqn(kind, spec, op),
+      handlerFqn: cqrsFqn(`${kind}-handler` as Part, spec, op),
+    }
+  })
 }
 
 function def(kind: Part, template: string, dependsOn: ComponentKind[]) {
@@ -62,9 +74,14 @@ function def(kind: Part, template: string, dependsOn: ComponentKind[]) {
     fileName: spec => `${cqrsClassName(kind, spec)}.cls`,
     dependsOn,
     context: spec => {
-      const op = operation(spec)
+      const resolved = operationOf(spec)
+      const op = resolved.name
       return {
         operation: op,
+        operationKind: resolved.kind,
+        // payload per operation kind; replaces the entity field list for command/query templates
+        fields: resolved.fields,
+        task: resolved.task,
         commandFqn: cqrsFqn('command', spec, op),
         queryFqn: cqrsFqn('query', spec, op),
       }

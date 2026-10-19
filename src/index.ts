@@ -13,11 +13,14 @@ export {
   scaffoldEntity,
   DEFAULT_ENTITY_KINDS,
   listComponents,
+  resolveOperation,
   registerComponent,
   packageOf,
 } from './core/index.js'
 export type {
   ComponentKind,
+  OperationSpec,
+  OperationKind,
   ComponentSpec,
   ComponentDefinition,
   LegacyNamingStrategy,

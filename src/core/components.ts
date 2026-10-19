@@ -1,4 +1,5 @@
 import { entityName } from './layout.js'
+import type { OperationSpec } from './operations.js'
 import { DEFAULT_COMMANDS, DEFAULT_QUERIES, facadeEntries } from './cqrs.js'
 import { toKebab, toPascal } from '../template.js'
 import { registerComponent } from './registry.js'
@@ -30,8 +31,8 @@ registerComponent({
   fileName: cls('Service'),
   dependsOn: ['contract', 'business-entity'],
   context: spec => ({
-    commands: facadeEntries(spec, (spec.commands as string[] | undefined) ?? DEFAULT_COMMANDS, 'command'),
-    queries: facadeEntries(spec, (spec.queries as string[] | undefined) ?? DEFAULT_QUERIES, 'query'),
+    commands: facadeEntries(spec, (spec.commands as (string | OperationSpec)[] | undefined) ?? DEFAULT_COMMANDS, 'command'),
+    queries: facadeEntries(spec, (spec.queries as (string | OperationSpec)[] | undefined) ?? DEFAULT_QUERIES, 'query'),
   }),
 })
 
